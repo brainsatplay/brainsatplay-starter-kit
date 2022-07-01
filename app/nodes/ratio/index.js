@@ -1,4 +1,4 @@
 export default {
     tag: 'ratio',
-    operator: (a,b) => a/b,
+    operator: (a,b=1) => a/b,
 }
