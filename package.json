@@ -1,0 +1,6 @@
+{
+    "name": "@brainsatplay/starter-kit",
+    "description": "Create a basic Brains@Play application.",
+    "author": "Garrett Flynn",
+    "main": "app/index.js"
+}
