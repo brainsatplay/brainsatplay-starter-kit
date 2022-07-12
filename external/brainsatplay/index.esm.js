@@ -1266,60 +1266,97 @@ function createNode(operator, parentNode, props, graph) {
 
 // src/App.ts
 var scriptLocation = new Error().stack.match(/([^ \n])*([a-z]*:\/\/\/?)*?[a-z0-9\/\\]*\.js/ig)[0];
-var dynamicImport = async (url) => {
-  const extraPath = scriptLocation.replace(window.origin, "").split("/");
-  url = [...extraPath.map((e) => ".."), ...url.split("/")].join("/");
-  let res = await import(url);
-  if (res.default)
-    res = res.default;
-  return res;
+var dynamicImport = async (url, type) => {
+  const assert = {};
+  if (type)
+    assert.type = type;
+  let imported = await import(url, { assert });
+  if (imported.default)
+    imported = imported.default;
+  return imported;
+};
+var importFromOrigin = async (url, local = true, type) => {
+  let imported = null;
+  if (local) {
+    const extraPath = scriptLocation.replace(window.origin, "").split("/");
+    url = [...extraPath.map((e) => ".."), ...url.split("/")].join("/");
+    imported = await dynamicImport(url, type);
+  } else
+    imported = await fetch(url).then((res) => {
+      if (res.ok)
+        return res[type]();
+      else
+        return;
+    });
+  return imported;
 };
 var App = class {
-  src;
+  base;
+  package;
   info;
+  remote = false;
+  packagePath = "/package.json";
+  pluginPath = "/.brainsatplay/index.plugins.json";
+  graphPath = "/.brainsatplay/index.graph.json";
   plugins;
   tree;
   graph;
   animated;
-  constructor(src) {
-    this.set(src);
+  constructor(base) {
+    this.set(base);
     this.graph = null;
     this.animated = {};
   }
-  get base() {
-    return this.src.replace("index.js", "");
-  }
   checkJSONConversion = (info) => {
-    if (typeof info === "string") {
-      console.warn(`Converting to an object from a JSON string`);
+    if (typeof info === "string")
       return JSON.parse(info);
-    } else
+    else
       return info;
   };
-  set = (src) => {
-    this.src = null;
-    if (typeof src === "string") {
-      this.src = src;
+  getURL = (str) => {
+    try {
+      return new URL(str).href;
+    } catch {
+      return false;
+    }
+  };
+  set = (base) => {
+    if (!base)
+      base = ".";
+    this.base = null;
+    this.package = null;
+    if (typeof base === "string") {
+      const url = this.getURL(base);
+      if (url) {
+        this.remote = true;
+        this.base = url;
+      } else
+        this.base = base;
       this.info = null;
     } else {
-      this.info = src;
+      this.info = base;
       for (let key in this.info) {
-        if (key === "src")
-          this.src = this.info[key];
+        if (key === "base")
+          this.base = this.info[key];
         else
           this.info[key] = this.checkJSONConversion(this.info[key]);
       }
-      if (!this.src)
-        console.warn('The "src" property may be required in the app info');
+      if (!this.base && typeof this.info.plugins[0] === "string")
+        throw 'The "base" property (pointing to a valid ESM module) is required in the app info';
     }
     this.tree = null;
   };
   getPlugins = async () => {
     const plugins = {};
     for (const name in this.info.plugins) {
-      if (typeof this.info.plugins[name] === "string")
-        plugins[name] = await dynamicImport(this.base + this.info.plugins[name]);
-      else
+      if (typeof this.info.plugins[name] === "string") {
+        let plugin = await importFromOrigin(this.join(this.base, this.info.plugins[name]), !this.remote);
+        if (typeof plugin === "string") {
+          const datauri = "data:text/javascript;base64," + btoa(plugin);
+          plugin = await dynamicImport(datauri);
+        }
+        plugins[name] = plugin;
+      } else
         plugins[name] = this.info.plugins[name];
     }
     return plugins;
@@ -1341,16 +1378,38 @@ var App = class {
     });
     return tree;
   };
+  join = (...paths) => {
+    const split = paths.map((path) => {
+      return path.split("/");
+    }).flat();
+    return split.join("/");
+  };
+  getBase = (path) => {
+    return path.split("/").slice(0, -1).join("/");
+  };
+  json = async (src) => {
+    return this.checkJSONConversion(await importFromOrigin(src, !this.remote, "json"));
+  };
   init = async () => {
-    if (!this.info)
-      this.info = await dynamicImport(this.src);
+    if (!this.package) {
+      this.package = await this.json(this.base + this.packagePath);
+      this.base = this.join(this.base, this.getBase(this.package.main));
+    }
+    if (!this.info) {
+      const graphPath = this.join(this.base, this.graphPath);
+      const pluginPath = this.join(this.base, this.pluginPath);
+      let graph = await this.json(graphPath);
+      let plugins = await this.json(pluginPath);
+      this.info = {
+        graph,
+        plugins
+      };
+    }
   };
   start = async () => {
     await this.init();
     await this.compile();
-    console.log("Tree", this.tree);
     this.graph = new Graph(this.tree, "graph");
-    console.log("Graph", this.graph);
     for (let key in this.graph.tree) {
       const nodeInfo = this.graph.tree[key];
       const node = this.graph.nodes.get(nodeInfo.tag);

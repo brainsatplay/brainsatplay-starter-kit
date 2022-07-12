@@ -11,11 +11,9 @@
 </body>
 <script type="module">
 
-    import appInfo from './app/index.js'
-    appInfo.src = './app/index.js'
     import * as brainsatplay from './external/brainsatplay/index.esm.js'
-    const app = new brainsatplay.App(appInfo)
-    app.start()
+    const app = new brainsatplay.App()
+    app.start().then(() =>console.log('App started', app))
 
 </script>
 </html>
