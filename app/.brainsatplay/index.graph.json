@@ -8,7 +8,8 @@
         "bandpower_1",
         "ratio_1",
         "webrtc_1",
-        "circles_1"
+        "circles_1",
+        "log_1"
     ],
 
     "edges": [
@@ -19,7 +20,9 @@
         ["bandpower_1:alpha", "ratio_1:a"],
         ["bandpower_1:beta", "ratio_1:b"],
         ["ratio_1", "webrtc_1"],
-        ["webrtc_1", "circles_1"]
+        ["webrtc_1", "circles_1"],
+        ["circles_1", "log_1"]
+
     ],
 
     "offload": {

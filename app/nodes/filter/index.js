@@ -4,7 +4,4 @@ export default {
         console.log('[filter]:', input)
         return input
     },
-
-    // Logic
-    edges: ['fft']
 }
