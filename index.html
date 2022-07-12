@@ -11,10 +11,11 @@
 </body>
 <script type="module">
 
+    import appInfo from './app/index.js'
+    appInfo.src = './app/index.js'
     import * as brainsatplay from './external/brainsatplay/index.esm.js'
-    const infoSrc = './app/index.js'
-    const app = visualscript.App(infoSrc)
-    app.init()
-    
+    const app = new brainsatplay.App(appInfo)
+    app.start()
+
 </script>
 </html>
