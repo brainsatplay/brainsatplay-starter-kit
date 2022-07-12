@@ -1,0 +1,5 @@
+{
+    "name": "fft",
+    "author": "Garrett Flynn",
+    "description": "A GPU-accelerated implementation of the Fast Fourier Transform."
+}

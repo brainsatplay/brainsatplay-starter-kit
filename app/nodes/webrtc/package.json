@@ -1,0 +1,5 @@
+{
+    "name": "webrtc",
+    "author": "Garrett Flynn",
+    "description": "Stream data over WebRTC."
+}

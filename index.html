@@ -10,12 +10,11 @@
     
 </body>
 <script type="module">
-    import tree from './app/index.js'
-    console.log(tree)
 
-    // TODO: Link in the new Brains@Play core to this demo
-    const app = new brainsatplay.App(tree)
+    import * as brainsatplay from './external/brainsatplay/index.esm.js'
+    const infoSrc = './app/index.js'
+    const app = visualscript.App(infoSrc)
     app.init()
-
+    
 </script>
 </html>

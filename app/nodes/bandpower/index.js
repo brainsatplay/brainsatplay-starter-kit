@@ -1,7 +1,7 @@
 export default {
-    tag: 'circle',
+    tag: 'bandpower',
     operator: (input) => {
-        console.log('[circle]:', input)
+        console.log('[bandpower]:', input)
         return input
     },
 }

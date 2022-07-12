@@ -1,0 +1,32 @@
+{
+    
+    "nodes": [
+        "seconds_1",
+        "sine_1",
+        "filter_1",
+        "fft_1",
+        "bandpower_1",
+        "ratio_1",
+        "webrtc_1",
+        "circles_1"
+    ],
+
+    "edges": [
+        ["seconds_1", "sine_1"],
+        ["sine_1", "filter_1"],
+        ["filter_1", "fft_1"],
+        ["fft_1", "bandpower_1"],
+        ["bandpower_1:alpha", "ratio_1:a"],
+        ["bandpower_1:beta", "ratio_1:b"],
+        ["ratio_1", "webrtc_1"],
+        ["webrtc_1", "circles_1"]
+    ],
+
+    "offload": {
+        "filter_1": "websocket",
+        "fft_1": "websocket",
+        "bandpower_1": "websocket",
+        "ratio_1": "websocket"
+    }
+    
+}

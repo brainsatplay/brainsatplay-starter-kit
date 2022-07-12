@@ -27,4 +27,8 @@ This can then be loaded into a brainsatplay **Graph** instance:
 ```
 
 
-More coming soon...
+## _.plugins.json
+Stores the application plugin information
+
+## _.graph.json
+Stores the application logic
