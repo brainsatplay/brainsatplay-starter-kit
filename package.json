@@ -3,5 +3,5 @@
     "description": "Create a basic Brains@Play application.",
     "author": "Garrett Flynn",
     "type": "module",
-    "main": "app/index.js"
+    "main": "index.js"
 }
