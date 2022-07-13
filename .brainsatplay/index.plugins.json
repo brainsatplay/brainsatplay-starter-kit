@@ -1,11 +1,9 @@
 {
-    "sine": "nodes/sine/index.js",
-    "seconds":  "nodes/seconds/index.js",
-    "filter":  "nodes/filter/index.js",
-    "fft":  "nodes/fft/index.js",
-    "bandpower":  "nodes/bandpower/index.js",
-    "ratio":  "nodes/ratio/index.js",
-    "webrtc":  "nodes/webrtc/index.js",
-    "circles": "nodes/circles/index.js",
-    "log":  "nodes/log/index.js"
+    "sine": "plugins/sine/index.js",
+    "seconds":  "plugins/seconds/index.js",
+    "filter":  "plugins/filter/index.js",
+    "focus":  "plugins/focus/index.js",
+    "webrtc":  "plugins/webrtc/index.js",
+    "circles": "plugins/circles/index.js",
+    "log":  "plugins/log/index.js"
 }

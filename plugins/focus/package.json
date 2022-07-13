@@ -1,0 +1,7 @@
+{
+    "name": "focus",
+    "author": "Garrett Flynn",
+    "description": "Detect focus in EEG data.",
+    "type": "module",
+    "main": "index.js"
+}

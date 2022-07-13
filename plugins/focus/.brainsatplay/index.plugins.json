@@ -1,0 +1,5 @@
+{
+    "fft":  "fft/index.js",
+    "bandpower":  "bandpower/index.js",
+    "ratio":  "ratio/index.js"
+}
