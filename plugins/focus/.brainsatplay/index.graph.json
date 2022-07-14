@@ -17,8 +17,8 @@
 
     "edges": [
         ["fft_1", "bandpower_1"],
-        ["bandpower_1:alpha", "ratio_1:a"],
-        ["bandpower_1:beta", "ratio_1:b"]
+        ["bandpower_1.alpha", "ratio_1.a"],
+        ["bandpower_1.beta", "ratio_1.b"]
     ],
 
     "ports": {
