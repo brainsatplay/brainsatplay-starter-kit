@@ -12,8 +12,6 @@ export default {
             gamma: input[4]*100,
         }
 
-        console.log('[bandpower]', output)
-
         return output[band] // TODO: Allow returning multiple outputs
     },
 }
