@@ -1,37 +1,35 @@
 {
     
-    "nodes": [
-        {
-            "tag": "seconds_1"
-        },
-        {
-            "tag": "sine_1"
-        },
-        {
-            "tag": "filter_1",
-            "offload": "websocket"
-        },
-        {
-            "tag": "focus_1",
-            "offload": "websocket"
-        },
-        {
-            "tag": "webrtc_1"
-        },
-        {
-            "tag": "circles_1"
-        },
-        {
-            "tag": "log_1"
-        }
-    ],
+    "nodes": {
+        "seconds_1": {},
+        "sine_1": {},
+        "filter_1": {"offload": "websocket"},
+        "focus_1": {"offload": "websocket"},
+        "webrtc_1": {},
+        "circles_1": {},
+        "log_1": {}
 
-    "edges": [
-        ["seconds_1", "sine_1"],
-        ["sine_1", "filter_1"],
-        ["filter_1", "focus_1"],
-        ["focus_1", "webrtc_1"],
-        ["webrtc_1", "circles_1"],
-        ["circles_1", "log_1"]
-    ]
+
+    },
+
+    "edges": {
+        "seconds_1": {
+            "sine_1": {}
+        },
+        "sine_1": {
+            "filter_1": {}
+        },
+        "filter_1": {
+            "focus_1": {}
+        },
+        "focus_1": {
+            "webrtc_1": {}
+        },
+        "webrtc_1":{
+            "circles_1": {}
+        },
+        "circles_1": {
+            "log_1": {}
+        }
+    }
 }
