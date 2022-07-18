@@ -1,7 +1,7 @@
 {
     
     "nodes": {
-        "fft_11": {
+        "fft_1": {
             "offload": "websocket"
         },
         "bandpower_1": {
