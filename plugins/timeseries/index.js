@@ -21,7 +21,6 @@ export default {
     // Add TimeSeries instance to the main UI
     oncreate: (self) => {
         timeseries = document.createElement('visualscript-timeseries-stream') // don't use class declarations directly to avoid version overlap
-        console.log('self', self)
         self.appendChild(timeseries)
     }
 }
