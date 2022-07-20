@@ -1,4 +1,4 @@
-import 'https://cdn.jsdelivr.net/npm/visualscript@0.0.6/dist/index.esm.js'
+import 'https://cdn.jsdelivr.net/npm/visualscript@0.0.7/dist/index.esm.js'
 
 let timeseries;
 
