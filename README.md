@@ -33,3 +33,8 @@ Stores the application plugin information
 
 ### _.graph.json
 Stores the application logic
+
+## Backlong
+- Attach the current UI to the Sine plugin
+- Stream ratio over WebRTC
+- Generate circles based on WebRTC connections

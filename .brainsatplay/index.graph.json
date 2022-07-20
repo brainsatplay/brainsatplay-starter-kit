@@ -5,8 +5,6 @@
         "sine": {},
         "filter": {"offload": "websocket"},
         "focus": {"offload": "websocket"},
-        "webrtc": {},
-        "circles": {},
         "log": {},
         "timeseries": {}
     },
@@ -23,12 +21,6 @@
             "focus": {}
         },
         "focus": {
-            "webrtc": {}
-        },
-        "webrtc":{
-            "circles": {}
-        },
-        "circles": {
             "log": {}
         }
     }
