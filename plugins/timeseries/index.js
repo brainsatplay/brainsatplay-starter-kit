@@ -1,13 +1,13 @@
 import 'https://cdn.jsdelivr.net/npm/visualscript@0.0.7/dist/index.esm.js'
 
-let timeseries;
+let timeseriesElement;
 
 export default {
     tag: 'timeseries',
     operator: (data) => {
-        if (timeseries){
-            timeseries.data = [data]
-            timeseries.draw()
+        if (timeseriesElement){
+            timeseriesElement.data = [data]
+            timeseriesElement.draw()
         }
         return data
     },
@@ -20,7 +20,7 @@ export default {
 
     // Add TimeSeries instance to the main UI
     oncreate: (self) => {
-        timeseries = document.createElement('visualscript-timeseries-stream') // don't use class declarations directly to avoid version overlap
-        self.appendChild(timeseries)
+        timeseriesElement = document.createElement('visualscript-timeseries-stream') // don't use class declarations directly to avoid version overlap
+        self.appendChild(timeseriesElement)
     }
 }
