@@ -5,5 +5,6 @@
     "focus":  "plugins/focus/index.js",
     "webrtc":  "plugins/webrtc/index.js",
     "circles": "plugins/circles/index.js",
-    "log":  "plugins/log/index.js"
+    "log":  "plugins/log/index.js",
+    "timeseries":  "plugins/timeseries/index.js"
 }

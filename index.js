@@ -12,6 +12,7 @@ import focus from './plugins/focus/index.js';
 import log from './plugins/log/index.js';
 import seconds from './plugins/seconds/index.js';
 import sine from './plugins/sine/index.js';
+import timeseries from './plugins/timeseries/index.js';
 import webrtc from './plugins/webrtc/index.js';
 
 // Step 1: Import JSON Files Directly
@@ -27,6 +28,7 @@ export default {
     log,
     seconds,
     sine, 
+    timeseries,
     webrtc,
     ['.brainsatplay']: {
         package: pkg,

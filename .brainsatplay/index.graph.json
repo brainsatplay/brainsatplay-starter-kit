@@ -1,35 +1,35 @@
 {
     
     "nodes": {
-        "seconds_1": {},
-        "sine_1": {},
-        "filter_1": {"offload": "websocket"},
-        "focus_1": {"offload": "websocket"},
-        "webrtc_1": {},
-        "circles_1": {},
-        "log_1": {}
-
-
+        "seconds": {},
+        "sine": {},
+        "filter": {"offload": "websocket"},
+        "focus": {"offload": "websocket"},
+        "webrtc": {},
+        "circles": {},
+        "log": {},
+        "timeseries": {}
     },
 
     "edges": {
-        "seconds_1": {
-            "sine_1": {}
+        "seconds": {
+            "sine": {}
         },
-        "sine_1": {
-            "filter_1": {}
+        "sine": {
+            "filter": {},
+            "timeseries": {}
         },
-        "filter_1": {
-            "focus_1": {}
+        "filter": {
+            "focus": {}
         },
-        "focus_1": {
-            "webrtc_1": {}
+        "focus": {
+            "webrtc": {}
         },
-        "webrtc_1":{
-            "circles_1": {}
+        "webrtc":{
+            "circles": {}
         },
-        "circles_1": {
-            "log_1": {}
+        "circles": {
+            "log": {}
         }
     }
 }
