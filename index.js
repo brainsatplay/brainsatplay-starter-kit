@@ -18,7 +18,6 @@ import webrtc from './plugins/webrtc/index.js';
 // Step 1: Import JSON Files Directly
 import pkg from './package.json' assert {type: 'json'};
 import graph from './.brainsatplay/index.graph.json' assert {type: 'json'};
-import plugins from './.brainsatplay/index.plugins.json' assert {type: 'json'};
 
 // Step 2: Export Application API + Info
 export default {
@@ -32,7 +31,6 @@ export default {
     webrtc,
     ['.brainsatplay']: {
         package: pkg,
-        plugins,
         graph
     }
 }
