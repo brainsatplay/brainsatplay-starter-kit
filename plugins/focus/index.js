@@ -6,7 +6,6 @@ import ratio from './ratio/index.js';
 
 import pkg from './package.json' assert {type: 'json'};
 import graph from './.brainsatplay/index.graph.json' assert {type: 'json'};
-import plugins from './.brainsatplay/index.plugins.json' assert {type: 'json'};
 
 export default {
     bandpower,
@@ -14,7 +13,6 @@ export default {
     ratio,
     ['.brainsatplay']: {
         package: pkg,
-        plugins,
         graph
     }
 }

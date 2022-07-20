@@ -28,8 +28,8 @@ This can then be loaded into a brainsatplay **Graph** instance:
 
 
 ## File Structure
-### _.plugins.json
-Stores the application plugin information
+### _.metadata.json
+Stores the plugin metadata
 
 ### _.graph.json
 Stores the application logic
