@@ -1,7 +1,7 @@
 # brainsatplay-starter-kit
- Template application for the `brainsatplay` library
+ Template application for the [brainsatplay] library
 
-> **Note:** This template application is still under development. While the `app` directory is fully-functional, we have not linked the latest `brainsatplay` library into the `index.html` demo.
+> **Note:** This template application is still under development. While the `app` directory is fully-functional, we have not linked the latest [brainsatplay] library into the `index.html` demo.
 
 Welcome to the Brains@Play ecosystem! This starter kit will onboard you to the development of high-performance web applications using **graphs**.
 
@@ -27,14 +27,8 @@ This can then be loaded into a brainsatplay **Graph** instance:
 ```
 
 
-## File Structure
-### _.metadata.json
-Stores the plugin metadata
-
-### _.graph.json
-Stores the application logic
-
 ## Backlong
-- Attach the current UI to the Sine plugin
 - Stream ratio over WebRTC
 - Generate circles based on WebRTC connections
+
+[brainsatplay]: https://github.com/brainsatplay/brainsatplay
