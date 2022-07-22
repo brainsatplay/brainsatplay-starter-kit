@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Brains@Play Starter Kit</title>
+    <link rel=stylesheet href="./styles.css">
+</head>
+<body>
+    <div></div>
+</body>
+<!-- <script type="module" src="./dist/index.js"></script> -->
+<script type="module">
+    import * as brainsatplay from './external/brainsatplay/index.esm.js'
+    import appInfo from './index.js'
+
+    // instantiate the application
+    const app = new brainsatplay.App(appInfo)    
+
+    // attach the application to a specific location in the DOM
+    const ui = document.querySelector('div')
+    ui.style.width = '100vw'
+    ui.style.height = '100vh'
+    app.setParent(ui)
+
+    // start the application
+    app.start().then(ok => {
+        if (ok) console.log('App started', app)
+        else console.log('App failed', app)
+         
+    }).catch(e => console.error('Invalid App', e))
+
+</script>
+
+</html>
