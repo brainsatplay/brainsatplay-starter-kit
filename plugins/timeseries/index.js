@@ -17,7 +17,7 @@ const timeseries = {
     },
 
     // Add TimeSeries instance to the main UI
-    oncreate: (self) => {
+    onrender: (self) => {
         timeseries.visualization = document.createElement('visualscript-timeseries-stream') // don't use class declarations directly to avoid version overlap
         self.appendChild(timeseries.visualization)
     }
