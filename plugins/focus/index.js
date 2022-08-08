@@ -1,18 +1,17 @@
 
 
-import bandpower from './bandpower/index.js';
-import fft from './fft/index.js';
-import ratio from './ratio/index.js';
+import * as bandpowerPlugin from './bandpower/index.js';
+import * as fftPlugin from './fft/index.js';
+import * as ratioPlugin from './ratio/index.js';
 
 import pkg from './package.json' assert {type: 'json'};
-import graph from './.brainsatplay/index.graph.json' assert {type: 'json'};
+import graph from './index.wasl' assert {type: 'json'};
+
+export const bandpower = bandpowerPlugin
+export const fft = fftPlugin
+export const ratio = ratioPlugin
 
 export default {
-    bandpower,
-    fft, 
-    ratio,
-    ['.brainsatplay']: {
-        package: pkg,
-        graph
-    }
+    package: pkg,
+    graph
 }

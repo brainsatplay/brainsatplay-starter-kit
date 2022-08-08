@@ -1,4 +1,5 @@
-export default {
-    tag: 'log',
-    operator: (...inputs) => console.log('[log]:', ...inputs),
-}
+export const tag = "log"
+
+export const operator = (...inputs) => console.log('[log]:', ...inputs)
+
+export default operator

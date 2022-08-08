@@ -1,17 +1,18 @@
-export default {
-    tag: 'bandpower',
-    operator: (input, band='alpha') => {
+export const tag = "bandpower"
 
-        if (!Array.isArray(input)) input = []
+export const operator = (input, band='alpha') => {
 
-        const output = {
-            alpha: input[0]*100,
-            delta: input[1]*100,
-            beta: input[2]*100,
-            theta: input[3]*100,
-            gamma: input[4]*100,
-        }
+    if (!Array.isArray(input)) input = []
 
-        return output[band] // TODO: Allow returning multiple outputs
-    },
+    const output = {
+        alpha: input[0]*100,
+        delta: input[1]*100,
+        beta: input[2]*100,
+        theta: input[3]*100,
+        gamma: input[4]*100,
+    }
+
+    return output[band] // TODO: Allow returning multiple outputs
 }
+
+export default operator

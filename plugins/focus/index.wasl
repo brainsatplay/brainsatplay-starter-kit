@@ -2,13 +2,16 @@
     
     "nodes": {
         "fft_1": {
-            "offload": "websocket"
+            "offload": "websocket",
+            "src": "fft/index.js"
         },
         "bandpower_1": {
-            "offload": "websocket"
+            "offload": "websocket",
+            "src": "bandpower/index.js"
         },
         "ratio_1": {
-            "offload": "websocket"
+            "offload": "websocket",
+            "src": "ratio/index.js"
         }
     },
 
