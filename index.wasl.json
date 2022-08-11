@@ -1,0 +1,42 @@
+{
+    "graph": {
+        "nodes": {
+            "seconds": {
+                "src": "plugins/seconds/index.js"
+            },
+            "sine": {
+                "src": "plugins/sine/index.js"
+            },
+            "filter": {
+                "offload": "websockets",
+                "src": "plugins/filter/index.js"
+            },
+            "focus": {
+                "offload": "websockets",
+                "src": "plugins/focus/index.wasl.json"
+            },
+            "log": {
+                "src": "plugins/log/index.js"
+            },
+            "timeseries": {
+                "src": "plugins/timeseries/index.js"
+            }
+        },
+
+        "edges": {
+            "seconds": {
+                "sine": {}
+            },
+            "sine": {
+                "filter": {},
+                "timeseries": {}
+            },
+            "filter": {
+                "focus": {}
+            },
+            "focus": {
+                "log": {}
+            }
+        }
+    }
+}

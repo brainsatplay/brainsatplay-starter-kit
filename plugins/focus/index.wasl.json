@@ -1,0 +1,37 @@
+{
+    "graph": {
+        "nodes": {
+            "fft_1": {
+                "offload": "websocket",
+                "src": "fft/index.js"
+            },
+            "bandpower_1": {
+                "offload": "websocket",
+                "src": "bandpower/index.js"
+            },
+            "ratio_1": {
+                "offload": "websocket",
+                "src": "ratio/index.js"
+            }
+        },
+
+        "edges": {
+            "fft_1": {
+                "bandpower_1": {}
+            },
+            "bandpower_1.alpha": {
+                "ratio_1.a": {}
+            },
+            "bandpower_1.beta": {
+                "ratio_1.b": {}
+            }
+        },
+
+        "ports": {
+            "input": {
+                "signal": "fft_1"
+            },
+            "output": "ratio_1"
+        }
+    }
+}
