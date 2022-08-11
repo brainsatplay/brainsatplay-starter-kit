@@ -1,16 +1,6 @@
 import 'https://cdn.jsdelivr.net/npm/visualscript@0.0.7/dist/index.esm.js'
 
-export const  tag = 'timeseries'
 export let visualization;
-
-export const operator = (data) => {
-    if (visualization){
-        visualization.data = [data]
-        visualization.draw()
-    }
-    return data
-}
-
 export const tagName= 'div'
 
 export const  style= {
@@ -25,4 +15,10 @@ export const onrender = (self) => {
 
 
 
-export default operator
+export default (data) => {
+    if (visualization){
+        visualization.data = [data]
+        visualization.draw()
+    }
+    return data
+}

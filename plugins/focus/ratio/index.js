@@ -1,8 +1,4 @@
-export const tag = "ratio"
-
-export const operator = (a,b) => {
+export default (a,b) => {
     if (b) return a/b
     else return a
 }
-
-export default operator

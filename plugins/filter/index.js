@@ -1,7 +1,3 @@
-export const tag = "filter"
-
-export const operator = (input) => {
+export default (input) => {
     return input
 }
-
-export default operator

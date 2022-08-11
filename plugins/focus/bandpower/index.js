@@ -1,6 +1,4 @@
-export const tag = "bandpower"
-
-export const operator = (input, band='alpha') => {
+export default (input, band='alpha') => {
 
     if (!Array.isArray(input)) input = []
 
@@ -14,5 +12,3 @@ export const operator = (input, band='alpha') => {
 
     return output[band] // TODO: Allow returning multiple outputs
 }
-
-export default operator
