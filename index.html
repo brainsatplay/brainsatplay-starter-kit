@@ -13,15 +13,16 @@
 <!-- <script type="module" src="./dist/index.js"></script> -->
 <script type="module">
 
-    // Brains@Play Framework Library
+    // --------------------- Import the Brains@Play Framework Library ---------------------
     import * as brainsatplay from './external/brainsatplay/index.esm.js'
 
-    // instantiate the application
+    // --------------------- Instantiate the Application ---------------------
+    // Method #1: Provide relativeTo reference
     const app = new brainsatplay.App('./index.wasl.json', {
         relativeTo: import.meta.url
     })    
 
-    // // alternative: link to external directory
+    // // Method #2: Link to external directory
     // import appInfo from './index.wasl.json' assert {type: "json"}
     // import focusInfo from './plugins/focus/index.wasl.json' assert {type: "json"}
 
@@ -56,13 +57,13 @@
     // const app = new brainsatplay.App(appInfo, options)    
 
 
-    // attach the application to a specific location in the DOM
+    // --------------------- Attach to DOM ---------------------
     const ui = document.querySelector('div')
     ui.style.width = '100vw'
     ui.style.height = '100vh'
     app.setParent(ui)
 
-    // start the application
+    // --------------------- Start Application ---------------------
     app.start().then(ok => {
         if (ok) console.log('App started', app)
         else console.log('App failed', app)
