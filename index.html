@@ -12,11 +12,14 @@
 </body>
 <!-- <script type="module" src="./dist/index.js"></script> -->
 <script type="module">
+
+    // Brains@Play Framework Library
     import * as brainsatplay from './external/brainsatplay/index.esm.js'
-    import appInfo from './index.js'
 
     // instantiate the application
-    const app = new brainsatplay.App(appInfo)    
+    const app = new brainsatplay.App('./index.wasl.json', {
+        relativeTo: import.meta.url
+    })    
 
     // attach the application to a specific location in the DOM
     const ui = document.querySelector('div')
