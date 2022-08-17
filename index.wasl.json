@@ -8,11 +8,11 @@
                 "src": "plugins/sine/index.js"
             },
             "filter": {
-                "offload": "websockets",
+                "offload": "wss://example.com",
                 "src": "plugins/filter/index.js"
             },
             "focus": {
-                "offload": "websockets",
+                "offload": "wss://example.com",
                 "src": "plugins/focus/index.wasl.json"
             },
             "log": {

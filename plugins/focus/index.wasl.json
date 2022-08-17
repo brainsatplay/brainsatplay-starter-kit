@@ -2,27 +2,34 @@
     "graph": {
         "nodes": {
             "fft": {
-                "offload": "websocket",
                 "src": "fft/index.js"
             },
-            "bandpower": {
-                "offload": "websocket",
-                "src": "bandpower/index.js"
+            "alpha": {
+                "src": "bandpower/index.js",
+                "arguments": {
+                    "band": "alpha"
+                }
+            },
+            "beta": {
+                "src": "bandpower/index.js",
+                "arguments": {
+                    "band": "beta"
+                }
             },
             "ratio": {
-                "offload": "websocket",
                 "src": "ratio/index.js"
             }
         },
 
         "edges": {
             "fft": {
-                "bandpower": {}
+                "alpha": {},
+                "beta": {}
             },
-            "bandpower.alpha": {
+            "alpha": {
                 "ratio.a": {}
             },
-            "bandpower.beta": {
+            "beta": {
                 "ratio.b": {}
             }
         },
