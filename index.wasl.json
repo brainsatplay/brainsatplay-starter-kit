@@ -2,7 +2,8 @@
     "graph": {
         "nodes": {
             "seconds": {
-                "src": "plugins/seconds/index.js"
+                "src": "plugins/seconds/index.js",
+                "arguments": [true]
             },
             "sine": {
                 "src": "plugins/sine/index.js"
