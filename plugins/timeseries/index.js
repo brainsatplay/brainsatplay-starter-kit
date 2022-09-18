@@ -19,6 +19,7 @@ export let channels = {}
 
 const arrayFactory = (data, length=1, position=0) => Array.from({length}, (_,i) => (position === i) ? data : [])
 export default function (data, time, tag) {
+    console.log('Going', data)
     if (this.stream){
         let transformed = arrayFactory(data, this.nChannels, this.channels[tag])
         this.stream.data = transformed

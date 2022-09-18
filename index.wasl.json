@@ -1,43 +1,42 @@
 {
-    "graph": {
-        "nodes": {
-            "seconds": {
-                "src": "plugins/seconds/index.js",
-                "arguments": [true]
-            },
-            "sine": {
-                "src": "plugins/sine/index.js"
-            },
-            "filter": {
-                "offload": "wss://example.com",
-                "src": "plugins/filter/index.js"
-            },
-            "focus": {
-                "offload": "wss://example.com",
-                "src": "plugins/focus/index.wasl.json"
-            },
-            "log": {
-                "src": "plugins/log/index.js"
-            },
-            "timeseries": {
-                "src": "plugins/timeseries/index.js"
-            }
+    "components": {
+        "seconds": {
+            "src": "plugins/seconds/index.js",
+            "arguments": [
+                true
+            ]
         },
-
-        "edges": {
-            "seconds": {
-                "sine": {}
-            },
-            "sine": {
-                "filter": {},
-                "timeseries": {}
-            },
-            "filter": {
-                "focus": {}
-            },
-            "focus": {
-                "log": {}
-            }
+        "sine": {
+            "src": "plugins/sine/index.js"
+        },
+        "filter": {
+            "offload": "wss://example.com",
+            "src": "plugins/filter/index.js"
+        },
+        "focus": {
+            "offload": "wss://example.com",
+            "src": "plugins/focus/index.wasl.json"
+        },
+        "log": {
+            "src": "plugins/log/index.js"
+        },
+        "timeseries": {
+            "src": "plugins/timeseries/index.js"
+        }
+    },
+    "connections": {
+        "seconds": {
+            "sine": {}
+        },
+        "sine": {
+            "filter": {},
+            "timeseries": {}
+        },
+        "filter": {
+            "focus": {}
+        },
+        "focus": {
+            "log": {}
         }
     }
 }
