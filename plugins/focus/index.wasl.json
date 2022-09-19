@@ -1,19 +1,28 @@
 {
-    "graph": {
-        "nodes": {
+    "components": {
             "fft": {
-                "src": "fft/index.js"
+                "src": "fft/index.js",
+                "children": {
+                    "alpha": true,
+                    "beta": true
+                }
             },
             "alpha": {
                 "src": "bandpower/index.js",
                 "arguments": {
                     "band": "alpha"
+                },
+                "children": {
+                    "ratio.a": true
                 }
             },
             "beta": {
                 "src": "bandpower/index.js",
                 "arguments": {
                     "band": "beta"
+                },
+                "children": {
+                    "ratio.b": true
                 }
             },
             "ratio": {
@@ -21,22 +30,8 @@
             }
         },
 
-        "edges": {
-            "fft": {
-                "alpha": {},
-                "beta": {}
-            },
-            "alpha": {
-                "ratio.a": {}
-            },
-            "beta": {
-                "ratio.b": {}
-            }
-        },
-
         "ports": {
             "input": "fft",
             "output": "ratio"
         }
-    }
 }

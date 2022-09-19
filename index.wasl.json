@@ -4,39 +4,37 @@
             "src": "plugins/seconds/index.js",
             "arguments": [
                 true
-            ]
+            ],
+            "children": {
+                "sine": true
+            }
         },
         "sine": {
-            "src": "plugins/sine/index.js"
+            "src": "plugins/sine/index.js",
+            "children": {
+                "filter": true,
+                "timeseries": true
+            }
         },
         "filter": {
             "offload": "wss://example.com",
-            "src": "plugins/filter/index.js"
+            "src": "plugins/filter/index.js",
+            "children": {
+                "focus": true
+            }
         },
         "focus": {
             "offload": "wss://example.com",
-            "src": "plugins/focus/index.wasl.json"
+            "src": "plugins/focus/index.wasl.json",
+            "children": {
+                "log": true
+            }
         },
         "log": {
             "src": "plugins/log/index.js"
         },
         "timeseries": {
             "src": "plugins/timeseries/index.js"
-        }
-    },
-    "connections": {
-        "seconds": {
-            "sine": {}
-        },
-        "sine": {
-            "filter": {},
-            "timeseries": {}
-        },
-        "filter": {
-            "focus": {}
-        },
-        "focus": {
-            "log": {}
         }
     }
 }
