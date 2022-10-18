@@ -8,67 +8,34 @@
     <link rel=stylesheet href="./styles.css">
 </head>
 <body>
-    <div></div>
+    <div id="app"></div>
 </body>
 <!-- <script type="module" src="./dist/index.js"></script> -->
 <script type="module">
 
     // --------------------- Import the Brains@Play Framework Library ---------------------
-    import * as brainsatplay from './external/brainsatplay/index.esm.js'
+    import escompose from './libraries/escompose/index.esm.js'
+    import * as escFile from './index.esc.js'
 
-    // --------------------- Instantiate the Application ---------------------
-    // Method #1: Provide relativeTo reference
-    const app = new brainsatplay.App('./index.wasl.json', {
-        relativeTo: import.meta.url
-    })    
+    console.log('escFile', escFile)
 
-    // // Method #2: Link to external directory
-    // import appInfo from './index.wasl.json' assert {type: "json"}
-    // import focusInfo from './plugins/focus/index.wasl.json' assert {type: "json"}
 
-    // import mainPkg from './package.json'  assert {type: "json"}
-    // import focusPkg from './plugins/focus/package.json'  assert {type: "json"}
+    // // --------------------- Instantiate the Application ---------------------
+    const esc = escompose(escFile, {
 
-    // import * as sine from  './plugins/sine/index.js'
-    // import * as seconds from  './plugins/seconds/index.js'
-    // import * as filter from  './plugins/filter/index.js'
-    // import * as log from  './plugins/log/index.js'
-    // import * as timeseries from  './plugins/timeseries/index.js'
-    // import * as bandpower from  './plugins/focus/bandpower/index.js'
-    // import * as fft from  './plugins/focus/fft/index.js'
-    // import * as ratio from  './plugins/focus/ratio/index.js'
+        // Create a monitor with this configuration
+        monitor: {
+            pathFormat: 'absolute',
+            polling: { sps: 60 }
+        }, 
 
-    // const options = {
-    //     filesystem: {
-    //         'package.json': mainPkg,
-    //         'plugins/focus/package.json': focusPkg,
-    //         'plugins/focus/index.wasl.json': focusInfo,
-    //         'plugins/sine/index.js': sine,
-    //         'plugins/seconds/index.js': seconds,
-    //         'plugins/filter/index.js': filter,
-    //         'plugins/log/index.js': log,
-    //         'plugins/timeseries/index.js': timeseries,
-    //         'plugins/focus/fft/index.js': fft,
-    //         'plugins/focus/bandpower/index.js': bandpower,
-    //         'plugins/focus/ratio/index.js': ratio,
-    //     }
-    // }
-
-    // const app = new brainsatplay.App(appInfo, options)    
-
+        // Will be able to track new keys added to the object
+        listeners: { static: false }
+    })
 
     // --------------------- Attach to DOM ---------------------
-    const ui = document.querySelector('div')
-    ui.style.width = '100vw'
-    ui.style.height = '100vh'
-    app.setParent(ui)
-
-    // --------------------- Start Application ---------------------
-    app.start().then(ok => {
-        if (ok) console.log('App started', app)
-        else console.log('App failed', app)
-         
-    }).catch(e => console.error('Invalid App', e))
+    const ui = document.getElementById('app')
+    esc.esParent = ui
 
 </script>
 

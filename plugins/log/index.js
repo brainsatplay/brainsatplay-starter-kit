@@ -1,1 +1,0 @@
-export default (...inputs) => console.log('[log]:', ...inputs)

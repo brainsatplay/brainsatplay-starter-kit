@@ -1,7 +1,15 @@
 {
-    "name": "@brainsatplay/starter-kit",
-    "description": "Create a basic Brains@Play application.",
+    "name": "brainsatplay-starter-kit",
+    "description": "Create a basic application using the Brains@Play Framework",
     "author": "Garrett Flynn",
     "type": "module",
-    "main": "index.js"
+    "main": "index.js",
+
+    "scripts": {
+        "start": "node temp/download.js"
+    },
+
+    "devDependencies": {
+        "brainsatplay": "0.1.0"
+    }
 }

@@ -1,10 +1,5 @@
 # brainsatplay-starter-kit
- Template application for the [brainsatplay] framework
+ Template application for the [Brains@Play Framework](https://github.com/brainsatplay)
 
- > **Note:** A .nojekyll file is required to publish on GitHub Pages since Jekyll considers files / directories starting with a '.' to be special resources and does not copy them to the final site.
-
-## Development Backlog
-- Stream ratio over WebRTC
-- Generate circles based on WebRTC connections
-
-[brainsatplay]: https://github.com/brainsatplay/brainsatplay
+## The Basics
+This repository uses [ESCompile](https://github.com/brainsatplay/escode/blob/main/libraries/escompose) to instantiate a basic application from a **.esc.js** file.
