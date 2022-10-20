@@ -27,26 +27,46 @@ var isSame = (a, b) => {
 var iterateSymbols = (obj, callback) => {
   return Promise.all(Object.getOwnPropertySymbols(obj).map((sym) => callback(sym, obj[sym])));
 };
-var getPath = (type, info) => {
-  const pathType = info.path[type];
+var getPath = (type, info2) => {
+  const pathType = info2.path[type];
   if (!pathType)
     throw new Error("Invalid Path Type");
   const filtered = pathType.filter((v) => typeof v === "string");
-  return filtered.join(info.keySeparator);
+  return filtered.join(info2.keySeparator);
+};
+var getPathInfo = (path, options) => {
+  let splitPath = path;
+  if (typeof path === "string")
+    splitPath = path.split(options.keySeparator);
+  else if (typeof path === "symbol")
+    splitPath = [path];
+  return {
+    id: splitPath[0],
+    path: splitPath.slice(1)
+  };
+};
+var runCallback = (callback, path, info2, output, setGlobal = true) => {
+  if (callback instanceof Function)
+    callback(path, info2, output);
+  if (setGlobal && window.ESMonitorState) {
+    const callback2 = window.ESMonitorState.callback;
+    window.ESMonitorState.state[path] = { output, value: info2 };
+    runCallback(callback2, path, info2, output, false);
+  }
 };
 
 // ../esmonitor/src/Poller.ts
 var defaultSamplingRate = 60;
 var Poller = class {
-  constructor(listeners, sps) {
+  constructor(listeners2, sps) {
     this.listeners = {};
     this.setOptions = (opts = {}) => {
       for (let key in opts)
         this[key] = opts[key];
     };
-    this.add = (info) => {
-      const sub = info.sub;
-      this.listeners[sub] = info;
+    this.add = (info2) => {
+      const sub = info2.sub;
+      this.listeners[sub] = info2;
       this.start();
     };
     this.get = (sub) => this.listeners[sub];
@@ -55,40 +75,39 @@ var Poller = class {
       if (!Object.keys(this.listeners).length)
         this.stop();
     };
-    this.poll = (listeners) => {
-      iterateSymbols(listeners, (sym, o) => {
+    this.poll = (listeners2) => {
+      iterateSymbols(listeners2, (sym, o) => {
         let { callback, current, history } = o;
         if (!o.path.resolved)
           o.path.resolved = getPath("output", o);
         if (!isSame(current, history)) {
-          const info = {};
-          callback(o.path.resolved, info, current);
+          runCallback(callback, o.path.resolved, {}, current);
           if (typeof current === "object") {
             if (Array.isArray(current))
               history = [...current];
             else
               history = { ...current };
           } else
-            listeners[sym].history = current;
+            listeners2[sym].history = current;
         }
       });
     };
-    this.start = (listeners = this.listeners) => {
+    this.start = (listeners2 = this.listeners) => {
       if (!this.sps)
         this.sps = defaultSamplingRate;
       else if (!this.#pollingId) {
-        console.warn("Starting Polling!");
-        this.#pollingId = setInterval(() => this.poll(listeners), 1e3 / this.sps);
+        console.warn("[escode]: Starting Polling!");
+        this.#pollingId = setInterval(() => this.poll(listeners2), 1e3 / this.sps);
       }
     };
     this.stop = () => {
       if (this.#pollingId) {
-        console.warn("Stopped Polling!");
+        console.warn("[escode]: Stopped Polling!");
         clearInterval(this.#pollingId);
       }
     };
-    if (listeners)
-      this.listeners = listeners;
+    if (listeners2)
+      this.listeners = listeners2;
     if (sps)
       this.sps = sps;
   }
@@ -99,8 +118,8 @@ var Poller = class {
   }
   set sps(sps) {
     this.#sps = sps;
-    const listeners = this.listeners;
-    const nListeners = Object.keys(listeners).length;
+    const listeners2 = this.listeners;
+    const nListeners = Object.keys(listeners2).length;
     if (nListeners) {
       this.stop();
       this.start();
@@ -112,7 +131,10 @@ var Poller = class {
 var listeners_exports = {};
 __export(listeners_exports, {
   functionExecution: () => functionExecution,
-  functions: () => functions,
+  functions: () => functions2,
+  info: () => info,
+  register: () => register,
+  set: () => set,
   setterExecution: () => setterExecution,
   setters: () => setters
 });
@@ -138,12 +160,12 @@ var performance = async (callback, args) => {
 var infoFunctions = {
   performance
 };
-var get = async (func, args, info) => {
+var get = async (func, args, info2) => {
   let result = {
     value: {},
     output: void 0
   };
-  const infoToGet = { ...global_default.info, ...info };
+  const infoToGet = { ...global_default.info, ...info2 };
   for (let key in infoToGet) {
     if (infoToGet[key] && infoFunctions[key]) {
       const ogFunc = func;
@@ -158,117 +180,9 @@ var get = async (func, args, info) => {
   return result;
 };
 
-// ../esmonitor/src/listeners.ts
-var register = (info, collection) => {
-  const absolute = getPath("absolute", info);
-  if (!collection[absolute])
-    collection[absolute] = {};
-  collection[absolute][info.sub] = info;
-};
-var get2 = (info, collection) => collection[getPath("absolute", info)];
-var handler = (info, collection, subscribeCallback, monitor = true) => {
-  if (monitor) {
-    if (!get2(info, collection)) {
-      let parent = info.parent;
-      let val = parent[info.last];
-      subscribeCallback(val, parent);
-    }
-  }
-  register(info, collection);
-};
-var setterExecution = async (listeners, value) => {
-  const executionInfo = {};
-  await iterateSymbols(listeners, (_, o) => o.callback(getPath("output", o), executionInfo, value));
-};
-var setters = (info, collection, monitor = true) => {
-  handler(info, collection, (value, parent) => {
-    let val = value;
-    delete parent[info.last];
-    try {
-      Object.defineProperty(parent, info.last, {
-        get: () => val,
-        set: async (v) => {
-          const listeners = Object.assign({}, collection[getPath("absolute", info)]);
-          setterExecution(listeners, v);
-          val = v;
-        },
-        enumerable: true
-      });
-    } catch (e) {
-      throw e;
-    }
-  }, monitor);
-};
-var functionExecution = async (context, listeners, func, args) => {
-  listeners = Object.assign({}, listeners);
-  const keys = Object.getOwnPropertySymbols(listeners);
-  const info = listeners[keys[0]];
-  const executionInfo = await get(async (...args2) => await func.call(context, ...args2), args, info.infoToOutput);
-  await iterateSymbols(listeners, (_, o) => {
-    o.callback(getPath("output", o), executionInfo.value, executionInfo.output);
-  });
-  return executionInfo;
-};
-var functions = (info, collection, monitor = true) => {
-  handler(info, collection, (_, parent) => {
-    parent[info.last] = async function(...args) {
-      const listeners = collection[getPath("absolute", info)];
-      functionExecution(this, listeners, info.original, args);
-    };
-  }, monitor);
-};
-
-// ../common/drill.js
-var drillSimple = (obj, callback, options) => {
-  let accumulator = options.accumulator;
-  if (!accumulator)
-    accumulator = options.accumulator = {};
-  const ignore = options.ignore || [];
-  const path = options.path || [];
-  const condition = options.condition || true;
-  const seen = [];
-  const fromSeen = [];
-  let drill2 = (obj2, acc = {}, globalInfo) => {
-    for (let key in obj2) {
-      if (ignore.includes(key))
-        continue;
-      const val = obj2[key];
-      const newPath = [...globalInfo.path, key];
-      const info = {
-        typeof: typeof val,
-        name: val?.constructor?.name,
-        simple: true,
-        object: val && typeof val === "object",
-        path: newPath
-      };
-      if (info.object) {
-        const name = info.name;
-        if (name === "Object" || name === "Array") {
-          info.simple = true;
-          const idx = seen.indexOf(val);
-          if (idx !== -1)
-            acc[key] = fromSeen[idx];
-          else {
-            seen.push(val);
-            const pass2 = condition instanceof Function ? condition(key, val, info) : condition;
-            info.pass = pass2;
-            acc[key] = callback(key, val, info);
-            if (pass2) {
-              fromSeen.push(acc[key]);
-              acc[key] = drill2(val, acc[key], { ...globalInfo, path: newPath });
-            }
-          }
-        } else {
-          info.simple = false;
-          acc[key] = callback(key, val, info);
-        }
-      } else
-        acc[key] = callback(key, val, info);
-    }
-    return acc;
-  };
-  return drill2(obj, accumulator, { path });
-};
+// ../esmonitor/src/globals.ts
+var isProxy = Symbol("isProxy");
+var fromInspectable = Symbol("fromInspectable");
 
 // ../common/standards.ts
 var keySeparator = ".";
@@ -288,12 +202,15 @@ var getFromPath = (baseObject, path, opts = {}) => {
   let exists;
   path = [...path];
   let ref = baseObject;
+  let inInspectable = false;
   for (let i = 0; i < path.length; i++) {
     if (!ref) {
       const message = `Could not get path`;
       console.error(message, path, ref);
       throw new Error(message);
     }
+    if (!inInspectable)
+      inInspectable = !!ref.__esInspectable;
     const str = path[i];
     if (!hasKey(str, ref) && ref.hasOwnProperty("esComponents")) {
       for (let i2 in fallbackKeys) {
@@ -307,9 +224,11 @@ var getFromPath = (baseObject, path, opts = {}) => {
     exists = hasKey(str, ref);
     if (exists)
       ref = ref[str];
-    else if (i === path.length - 1) {
-      if (!opts.dynamic)
-        console.error(`Final path key not found: ${str}`, path, ref, baseObject);
+    else {
+      if (!inInspectable)
+        console.error(`Will not get updates from: ${path.filter((str2) => typeof str2 === "string").join(keySeparator2)}`);
+      else if (!ref.__esInspectable)
+        console.warn("Might be ignoring incorrectly...");
       return;
     }
   }
@@ -351,43 +270,35 @@ var setFromPath = (path, value, ref, opts = {}) => {
 // ../esmonitor/src/inspectable/handlers.ts
 var handlers_exports = {};
 __export(handlers_exports, {
-  functions: () => functions2,
-  isProxy: () => isProxy,
-  objects: () => objects,
-  runCallback: () => runCallback
+  functions: () => functions,
+  objects: () => objects
 });
-var isProxy = Symbol("isProxy");
-var runCallback = (callback, path, info, output, setGlobal = true) => {
-  if (callback instanceof Function)
-    callback(path, info, output);
-  if (setGlobal && window.ESMonitorState) {
-    const callback2 = window.ESMonitorState.callback;
-    window.ESMonitorState.state[path] = {
-      output,
-      value: info
-    };
-    runCallback(callback2, path, info, output, false);
-  }
-};
-var functions2 = (proxy) => {
+var functions = (proxy) => {
   return {
     apply: async function(target, thisArg, argumentsList) {
       try {
+        let foo = target;
+        const isFromInspectable = argumentsList[0]?.[fromInspectable];
+        if (isFromInspectable) {
+          foo = argumentsList[0].value;
+          argumentsList = argumentsList.slice(1);
+        }
+        let listeners2 = proxy.listeners.functions;
         const pathStr = proxy.path.join(proxy.options.keySeparator);
-        const listeners = proxy.listeners ? proxy.listeners.functions[pathStr] : void 0;
+        const toActivate = listeners2 ? listeners2[pathStr] : void 0;
         let output, executionInfo = {};
-        if (listeners) {
-          executionInfo = await functionExecution(thisArg, listeners, target, argumentsList);
+        if (toActivate) {
+          executionInfo = await functionExecution(thisArg, toActivate, foo, argumentsList);
           output = executionInfo.output;
         } else {
-          output = await target.apply(thisArg, argumentsList);
+          output = await foo.apply(thisArg, argumentsList);
           executionInfo = proxy?.state?.[pathStr]?.value ?? {};
         }
         const callback = proxy.options.callback;
         runCallback(callback, pathStr, executionInfo, output);
         return output;
       } catch (e) {
-        console.warn(`Cannot run function:`, e, proxy.proxy.path, proxy.parent, target, argumentsList);
+        console.warn(`Cannot run function:`, e, proxy.path, proxy.parent, target, argumentsList);
       }
     }
   };
@@ -403,20 +314,33 @@ var objects = (proxy) => {
       if (prop === isProxy)
         return true;
       const pathStr = [...proxy.path, prop].join(proxy.options.keySeparator);
+      const isFromInspectable = newVal?.[fromInspectable];
+      if (isFromInspectable)
+        newVal = newVal.value;
+      const listeners2 = proxy.listeners.setters;
+      if (!target.hasOwnProperty(prop)) {
+        if (typeof proxy.options.globalCallback === "function") {
+          const id = proxy.path[0];
+          set("setters", pathStr, newVal, proxy.options.globalCallback, { [id]: proxy.root }, proxy.listeners, proxy.options);
+        }
+      }
       if (newVal) {
         const newProxy = proxy.create(prop, target, newVal);
         if (newProxy)
           newVal = newProxy;
       }
-      if (proxy.listeners) {
-        const listeners = proxy.listeners.setters[pathStr];
-        if (listeners)
-          setterExecution(listeners, newVal);
+      if (listeners2) {
+        const toActivate = listeners2[pathStr];
+        if (toActivate)
+          setterExecution(toActivate, newVal);
       }
       const callback = proxy.options.callback;
-      const info = proxy?.state?.[pathStr]?.value ?? {};
-      runCallback(callback, pathStr, info, newVal);
-      return Reflect.set(target, prop, newVal, receiver);
+      const info2 = proxy?.state?.[pathStr]?.value ?? {};
+      runCallback(callback, pathStr, info2, newVal);
+      if (isFromInspectable)
+        return true;
+      else
+        return Reflect.set(target, prop, newVal, receiver);
     }
   };
 };
@@ -450,8 +374,6 @@ var canCreate = (parent, key, val) => {
     if (desc && (desc.value && desc.writable || desc.set)) {
       if (!isESM)
         return true;
-      else
-        console.warn("Cannot create proxy for ESM:", key, val);
     } else if (!parent.hasOwnProperty(key))
       return true;
   }
@@ -460,16 +382,17 @@ var canCreate = (parent, key, val) => {
 var Inspectable = class {
   constructor(target = {}, opts = {}, name, parent) {
     this.path = [];
+    this.listeners = {};
     this.state = {};
-    this.set = (path, info, update) => {
+    this.set = (path, info2, update) => {
       this.state[path] = {
         output: update,
-        value: info
+        value: info2
       };
       setFromPath(path, update, this.proxy, { create: true });
     };
     this.check = canCreate;
-    this.create = (key, parent, val, set = false) => {
+    this.create = (key, parent, val, set2 = false) => {
       const create3 = this.check(parent, key, val);
       if (val === void 0)
         val = parent[key];
@@ -477,57 +400,317 @@ var Inspectable = class {
         parent[key] = new Inspectable(val, this.options, key, this);
         return parent[key];
       }
-      if (set) {
+      if (set2) {
         try {
           this.proxy[key] = val ?? parent[key];
         } catch (e) {
           const isESM = esm(parent);
           const path = [...this.path, key];
-          console.warn(`Could not set value (${path.join(this.options.keySeparator)})${isESM ? " because the parent is an ESM." : ""}`);
+          console.error(`Could not set value (${path.join(this.options.keySeparator)})${isESM ? " because the parent is an ESM." : ""}`, isESM ? "" : e);
         }
       }
       return;
     };
+    if (!opts.pathFormat)
+      opts.pathFormat = "relative";
+    if (!opts.keySeparator)
+      opts.keySeparator = keySeparator;
     if (target.__esProxy)
       this.proxy = target.__esProxy;
+    else if (target[isProxy])
+      this.proxy = target;
     else {
       this.target = target;
       this.options = opts;
       this.parent = parent;
       if (this.parent) {
+        this.root = this.parent.root;
         this.path = [...this.parent.path];
         this.state = this.parent.state ?? {};
-      }
+      } else
+        this.root = target;
       if (name)
         this.path.push(name);
-      if (opts.listeners)
-        this.listeners = opts.listeners;
-      if (opts.path) {
-        if (opts.path instanceof Function)
-          this.path = opts.path(this.path);
-        else if (Array.isArray(opts.path))
-          this.path = opts.path;
+      if (this.options.listeners)
+        this.listeners = this.options.listeners;
+      if (this.options.path) {
+        if (this.options.path instanceof Function)
+          this.path = this.options.path(this.path);
+        else if (Array.isArray(this.options.path))
+          this.path = this.options.path;
         else
-          console.log("Invalid path", opts.path);
+          console.log("Invalid path", this.options.path);
       }
+      if (this.path)
+        this.path = this.path.filter((str) => typeof str === "string");
       if (!this.options.keySeparator)
         this.options.keySeparator = keySeparator;
-      let type = opts.type;
+      let type = this.options.type;
       if (type != "object")
         type = typeof target === "function" ? "function" : "object";
       const handler2 = handlers_exports[`${type}s`](this);
       this.proxy = new Proxy(target, handler2);
       Object.defineProperty(target, "__esProxy", { value: this.proxy, enumerable: false });
       Object.defineProperty(target, "__esInspectable", { value: this, enumerable: false });
-      for (let key in target)
+      for (let key in target) {
+        if (!this.parent) {
+          let value = target[key];
+          if (typeof value === "function") {
+            target[key] = async (...args) => {
+              return await this.proxy[key]({ [fromInspectable]: true, value }, ...args);
+            };
+          } else {
+            try {
+              Object.defineProperty(target, key, {
+                get: () => value,
+                set: (val) => {
+                  value = val;
+                  this.proxy[key] = { [fromInspectable]: true, value: val };
+                },
+                enumerable: true,
+                configurable: true
+              });
+            } catch (e) {
+              console.error(`Could not reassign ${key} to a top-level setter...`);
+            }
+          }
+        }
         this.create(key, target, void 0, true);
+      }
     }
     return this.proxy;
   }
 };
 
+// ../esmonitor/src/optionsHelpers.ts
+var setFromOptions = (path, value, baseOptions, opts) => {
+  const ref = opts.reference;
+  const id = Array.isArray(path) ? path[0] : typeof path === "string" ? path.split(baseOptions.keySeparator)[0] : path;
+  let isDynamic = opts.hasOwnProperty("static") ? !opts.static : false;
+  if (isDynamic && !globalThis.Proxy) {
+    isDynamic = false;
+    console.warn("Falling back to using function interception and setters...");
+  }
+  if (isDynamic) {
+    value = new Inspectable(value, {
+      pathFormat: baseOptions.pathFormat,
+      keySeparator: baseOptions.keySeparator,
+      listeners: opts.listeners,
+      path: (path2) => path2.filter((str) => !baseOptions.fallbacks || !baseOptions.fallbacks.includes(str))
+    }, id);
+  }
+  let options = { keySeparator: baseOptions.keySeparator, ...opts };
+  setFromPath(path, value, ref, options);
+  return value;
+};
+
+// ../esmonitor/src/listeners.ts
+var info = (id, callback, path, originalValue, base, listeners2, options) => {
+  if (typeof path === "string")
+    path = path.split(options.keySeparator);
+  const relativePath = path.join(options.keySeparator);
+  const refs = base;
+  const get3 = (path2) => {
+    return getFromPath(base, path2, {
+      keySeparator: options.keySeparator,
+      fallbacks: options.fallbacks
+    });
+  };
+  const set2 = (path2, value) => setFromOptions(path2, value, options, {
+    reference: base,
+    listeners: listeners2
+  });
+  let onUpdate = options.onUpdate;
+  let infoToOutput = {};
+  if (onUpdate && typeof onUpdate === "object" && onUpdate.callback instanceof Function) {
+    infoToOutput = onUpdate.info ?? {};
+    onUpdate = onUpdate.callback;
+  }
+  const absolute = [id, ...path];
+  let pathInfo = {
+    absolute,
+    relative: relativePath.split(options.keySeparator),
+    parent: absolute.slice(0, -1)
+  };
+  pathInfo.output = pathInfo[options.pathFormat];
+  const completePathInfo = pathInfo;
+  const info2 = {
+    id,
+    path: completePathInfo,
+    keySeparator: options.keySeparator,
+    infoToOutput,
+    callback: async (...args) => {
+      const output = await callback(...args);
+      if (onUpdate instanceof Function)
+        onUpdate(...args);
+      return output;
+    },
+    get current() {
+      return get3(info2.path.absolute);
+    },
+    set current(val) {
+      set2(info2.path.absolute, val);
+    },
+    get parent() {
+      return get3(info2.path.parent);
+    },
+    get reference() {
+      return refs[id];
+    },
+    set reference(val) {
+      refs[id] = val;
+    },
+    original: originalValue,
+    history: typeof originalValue === "object" ? Object.assign({}, originalValue) : originalValue,
+    sub: Symbol("subscription"),
+    last: path.slice(-1)[0]
+  };
+  return info2;
+};
+var register = (info2, collection, lookup) => {
+  const absolute = getPath("absolute", info2);
+  if (!collection[absolute])
+    collection[absolute] = {};
+  collection[absolute][info2.sub] = info2;
+  if (lookup)
+    lookup[info2.sub] = absolute;
+};
+var listeners = {
+  functions: functions2,
+  setters
+};
+var set = (type, absPath, value, callback, base, allListeners, options) => {
+  const { id, path } = getPathInfo(absPath, options);
+  const fullInfo = info(id, callback, path, value, base, listeners, options);
+  if (listeners[type])
+    listeners[type](fullInfo, allListeners[type], allListeners.lookup);
+  else {
+    const path2 = getPath("absolute", fullInfo);
+    allListeners[type][path2][fullInfo.sub] = fullInfo;
+    if (allListeners.lookup)
+      allListeners.lookup[fullInfo.sub] = path2;
+  }
+};
+var get2 = (info2, collection) => collection[getPath("absolute", info2)];
+var handler = (info2, collection, subscribeCallback, lookup) => {
+  if (!get2(info2, collection)) {
+    let parent = info2.parent;
+    let val = parent[info2.last];
+    subscribeCallback(val, parent);
+  }
+  register(info2, collection, lookup);
+};
+var setterExecution = async (listeners2, value) => {
+  await iterateSymbols(listeners2, (_, o) => {
+    const path = getPath("output", o);
+    runCallback(o.callback, path, {}, value);
+  });
+};
+function setters(info2, collection, lookup) {
+  handler(info2, collection, (value, parent) => {
+    let val = value;
+    if (!parent[isProxy]) {
+      let redefine = true;
+      try {
+        delete parent[info2.last];
+      } catch (e) {
+        console.error("Unable to redeclare setters. May already be a dynamic object...");
+        redefine = false;
+      }
+      if (redefine) {
+        try {
+          Object.defineProperty(parent, info2.last, {
+            get: () => val,
+            set: async (v) => {
+              val = v;
+              const listeners2 = Object.assign({}, collection[getPath("absolute", info2)]);
+              setterExecution(listeners2, v);
+            },
+            enumerable: true,
+            configurable: true
+          });
+        } catch (e) {
+          throw e;
+        }
+      }
+    }
+  }, lookup);
+}
+var functionExecution = async (context, listeners2, func, args) => {
+  listeners2 = Object.assign({}, listeners2);
+  const keys = Object.getOwnPropertySymbols(listeners2);
+  const infoTemplate = listeners2[keys[0]] ?? {};
+  const executionInfo = await get(async (...args2) => await func.call(context, ...args2), args, infoTemplate.infoToOutput);
+  await iterateSymbols(listeners2, (_, o) => {
+    const path = getPath("output", o);
+    runCallback(o.callback, path, executionInfo.value, executionInfo.output);
+  });
+  return executionInfo;
+};
+function functions2(info2, collection, lookup) {
+  handler(info2, collection, (_, parent) => {
+    if (!parent[isProxy]) {
+      parent[info2.last] = async function(...args) {
+        const listeners2 = collection[getPath("absolute", info2)];
+        return functionExecution(this, listeners2, info2.original, args);
+      };
+    }
+  }, lookup);
+}
+
+// ../common/drill.js
+var drillSimple = (obj, callback, options) => {
+  let accumulator = options.accumulator;
+  if (!accumulator)
+    accumulator = options.accumulator = {};
+  const ignore = options.ignore || [];
+  const path = options.path || [];
+  const condition = options.condition || true;
+  const seen = [];
+  const fromSeen = [];
+  let drill2 = (obj2, acc = {}, globalInfo) => {
+    for (let key in obj2) {
+      if (ignore.includes(key))
+        continue;
+      const val = obj2[key];
+      const newPath = [...globalInfo.path, key];
+      const info2 = {
+        typeof: typeof val,
+        name: val?.constructor?.name,
+        simple: true,
+        object: val && typeof val === "object",
+        path: newPath
+      };
+      if (info2.object) {
+        const name = info2.name;
+        if (name === "Object" || name === "Array") {
+          info2.simple = true;
+          const idx = seen.indexOf(val);
+          if (idx !== -1)
+            acc[key] = fromSeen[idx];
+          else {
+            seen.push(val);
+            const pass2 = condition instanceof Function ? condition(key, val, info2) : condition;
+            info2.pass = pass2;
+            acc[key] = callback(key, val, info2);
+            if (pass2) {
+              fromSeen.push(acc[key]);
+              acc[key] = drill2(val, acc[key], { ...globalInfo, path: newPath });
+            }
+          }
+        } else {
+          info2.simple = false;
+          acc[key] = callback(key, val, info2);
+        }
+      } else
+        acc[key] = callback(key, val, info2);
+    }
+    return acc;
+  };
+  return drill2(obj, accumulator, { path });
+};
+
 // ../esmonitor/src/Monitor.ts
-var fallback = "esComponents";
 var Monitor = class {
   constructor(opts = {}) {
     this.poller = new Poller();
@@ -535,86 +718,38 @@ var Monitor = class {
       pathFormat: "relative",
       keySeparator
     };
-    this.listenerLookup = {};
     this.listeners = {
       polling: this.poller.listeners,
       functions: {},
-      setters: {}
+      setters: {},
+      lookup: {}
     };
     this.references = {};
-    this.get = (path, output) => getFromPath(this.references, path, {
-      keySeparator: this.options.keySeparator,
-      fallbacks: [fallback],
-      output,
-      dynamic: this.references[path[0]][isProxy]
-    });
-    this.set = (path, value, ref = this.references, opts = {}) => setFromPath(path, value, ref, opts);
-    this.on = (absPath, callback, options = {}) => {
-      let splitPath = absPath;
-      if (typeof absPath === "string")
-        splitPath = absPath.split(this.options.keySeparator);
-      else if (typeof absPath === "symbol")
-        splitPath = [absPath];
-      const id = splitPath[0];
-      return this.listen(id, callback, splitPath.slice(1), options);
-    };
-    this.getInfo = (id, type, callback, path, original) => {
-      if (typeof path === "string")
-        path = path.split(this.options.keySeparator);
-      const relativePath = path.join(this.options.keySeparator);
-      const refs = this.references;
-      const get3 = this.get;
-      const set = this.set;
-      let onUpdate = this.options.onUpdate;
-      let infoToOutput = {};
-      if (onUpdate && typeof onUpdate === "object" && onUpdate.callback instanceof Function) {
-        infoToOutput = onUpdate.info ?? {};
-        onUpdate = onUpdate.callback;
-      }
-      const absolute = [id, ...path];
-      let pathInfo = {
-        absolute,
-        relative: relativePath.split(this.options.keySeparator),
-        parent: absolute.slice(0, -1)
-      };
-      pathInfo.output = pathInfo[this.options.pathFormat];
-      const completePathInfo = pathInfo;
-      const info = {
-        id,
-        path: completePathInfo,
+    this.get = (path, output) => {
+      return getFromPath(this.references, path, {
         keySeparator: this.options.keySeparator,
-        infoToOutput,
-        callback: async (...args) => {
-          const output = await callback(...args);
-          if (onUpdate instanceof Function)
-            onUpdate(...args);
-          return output;
-        },
-        get current() {
-          return get3(info.path.absolute);
-        },
-        set current(val) {
-          set(info.path.absolute, val);
-        },
-        get parent() {
-          return get3(info.path.parent);
-        },
-        get reference() {
-          return refs[id];
-        },
-        set reference(val) {
-          refs[id] = val;
-        },
-        original,
-        history: typeof original === "object" ? Object.assign({}, original) : original,
-        sub: Symbol("subscription"),
-        last: path.slice(-1)[0]
-      };
-      this.listenerLookup[info.sub] = getPath("absolute", info);
-      return info;
+        fallbacks: this.options.fallbacks,
+        output
+      });
     };
-    this.listen = (id, callback, path = [], options, __internal = {}) => {
-      let isDynamic = options.static ? !options.static : true;
+    this.set = (path, value, opts = {}) => {
+      const optsCopy = { ...opts };
+      if (!optsCopy.reference)
+        optsCopy.reference = this.references;
+      if (!optsCopy.listeners)
+        optsCopy.listeners = this.listeners;
+      return setFromOptions(path, value, this.options, optsCopy);
+    };
+    this.on = (absPath, callback) => {
+      const info2 = getPathInfo(absPath, this.options);
+      return this.listen(info2.id, callback, info2.path);
+    };
+    this.getInfo = (id, callback, path, original) => {
+      const info2 = info(id, callback, path, original, this.references, this.listeners, this.options);
+      this.listeners.lookup[info2.sub] = getPath("absolute", info2);
+      return info2;
+    };
+    this.listen = (id, callback, path = [], __internal = {}) => {
       if (typeof path === "string")
         path = path.split(this.options.keySeparator);
       else if (typeof path === "symbol")
@@ -624,21 +759,6 @@ var Monitor = class {
       if (!baseRef) {
         console.error(`Reference ${id} does not exist.`);
         return;
-      }
-      if (isDynamic && !globalThis.Proxy) {
-        isDynamic = false;
-        console.warn("Falling back to using function interception and setters...");
-      }
-      let isInspectable = baseRef[isProxy];
-      if (isDynamic && !isInspectable) {
-        const inspector = new Inspectable(baseRef, {
-          keySeparator: this.options.keySeparator,
-          listeners: this.listeners,
-          path: (path2) => path2.filter((str) => str !== fallback)
-        });
-        this.set(id, inspector);
-        baseRef = inspector;
-        isInspectable = true;
       }
       if (!__internal.poll)
         __internal.poll = esm(baseRef);
@@ -662,53 +782,56 @@ var Monitor = class {
       };
       let subs = {};
       if (toMonitorInternally(ref, true)) {
-        drillSimple(ref, (key, val, drillInfo) => {
+        if (ref.__esInspectable)
+          ref.__esInspectable.options.globalCallback = callback;
+        drillSimple(ref, (_, __, drillInfo) => {
           if (drillInfo.pass)
             return;
           else {
             const fullPath = [...arrayPath, ...drillInfo.path];
-            const internalSubs = this.listen(id, callback, fullPath, options, __internalComplete);
+            const internalSubs = this.listen(id, callback, fullPath, __internalComplete);
             Object.assign(subs, internalSubs);
           }
         }, {
           condition: (_, val) => toMonitorInternally(val)
         });
       } else {
-        let info;
+        let info2;
         try {
           if (__internalComplete.poll) {
-            info = this.getInfo(id, "polling", callback, arrayPath, ref);
-            this.poller.add(info);
+            info2 = this.getInfo(id, callback, arrayPath, ref);
+            this.poller.add(info2);
           } else {
             let type = "setters";
             if (typeof ref === "function")
               type = "functions";
-            info = this.getInfo(id, type, callback, arrayPath, ref);
-            this.add(type, info, !isInspectable);
+            info2 = this.getInfo(id, callback, arrayPath, ref);
+            this.add(type, info2);
           }
         } catch (e) {
-          console.warn("Falling to polling:", path, e);
-          info = this.getInfo(id, "polling", callback, arrayPath, ref);
-          this.poller.add(info);
+          console.error("Fallback to polling:", path, e);
+          info2 = this.getInfo(id, callback, arrayPath, ref);
+          this.poller.add(info2);
         }
-        subs[getPath("absolute", info)] = info.sub;
+        subs[getPath("absolute", info2)] = info2.sub;
         if (this.options.onInit instanceof Function) {
           const executionInfo = {};
-          for (let key in info.infoToOutput)
+          for (let key in info2.infoToOutput)
             executionInfo[key] = void 0;
-          this.options.onInit(getPath("output", info), executionInfo);
+          this.options.onInit(getPath("output", info2), executionInfo);
         }
       }
+      return subs;
     };
-    this.add = (type, info, monitor = true) => {
+    this.add = (type, info2) => {
       if (listeners_exports[type])
-        listeners_exports[type](info, this.listeners[type], monitor);
+        listeners_exports[type](info2, this.listeners[type], this.listeners.lookup);
       else
-        this.listeners[type][getPath("absolute", info)][info.sub] = info;
+        this.listeners[type][getPath("absolute", info2)][info2.sub] = info2;
     };
     this.remove = (subs) => {
       if (!subs) {
-        subs = subs = {
+        subs = {
           ...this.listeners.functions,
           ...this.listeners.setters,
           ...this.listeners.polling
@@ -731,7 +854,7 @@ var Monitor = class {
       return true;
     };
     this.unsubscribe = (sub) => {
-      const absPath = this.listenerLookup[sub];
+      const absPath = this.listeners.lookup[sub];
       const polling = this.poller.get(sub);
       const funcs = this.listeners.functions[absPath];
       const func = funcs?.[sub];
@@ -749,12 +872,17 @@ var Monitor = class {
           const parent = setter.parent;
           const last = setter.last;
           const value = parent[last];
-          Object.defineProperty(parent, last, { value });
+          Object.defineProperty(parent, last, { value, writable: true });
         }
       } else
         return false;
-      delete this.listenerLookup[sub];
+      delete this.listeners.lookup[sub];
     };
+    Object.defineProperty(this.listeners, "lookup", {
+      value: {},
+      enumerable: false,
+      configurable: false
+    });
     Object.assign(this.options, opts);
     this.poller.setOptions(opts.polling);
   }
@@ -766,19 +894,19 @@ var src_default = Monitor;
 // src/create/element.ts
 function create(id, esm2, parent) {
   let element = esm2.esElement;
-  let info;
+  let info2;
   if (!(element instanceof Element)) {
     if (typeof element === "object") {
-      info = element;
-      const id2 = info.id;
-      if (info.element instanceof Element)
-        element = info.element;
-      else if (info.selectors)
-        element = document.querySelector(info.selectors);
-      else if (info.id)
-        element = document.getElementById(info.id);
+      info2 = element;
+      const id2 = info2.id;
+      if (info2.element instanceof Element)
+        element = info2.element;
+      else if (info2.selectors)
+        element = document.querySelector(info2.selectors);
+      else if (info2.id)
+        element = document.getElementById(info2.id);
       else
-        element = info.element;
+        element = info2.element;
     }
     if (typeof element === "string")
       element = document.createElement(element);
@@ -787,7 +915,7 @@ function create(id, esm2, parent) {
     console.warn("Element not found for", id);
   let states = {
     element,
-    parentNode: esm2.esParent ?? info?.parentNode ?? (parent?.esElement instanceof Element ? parent.esElement : void 0),
+    parentNode: esm2.esParent ?? info2?.parentNode ?? (parent?.esElement instanceof Element ? parent.esElement : void 0),
     onresize: esm2.esOnResize,
     onresizeEventCallback: void 0
   };
@@ -796,21 +924,21 @@ function create(id, esm2, parent) {
       id = `${element.tagName ?? "element"}${Math.floor(Math.random() * 1e15)}`;
     if (!element.id)
       element.id = id;
-    if (info) {
-      if (info.attributes) {
-        for (let key in info.attributes) {
-          if (typeof info.attributes[key] === "function") {
-            const func = info.attributes[key];
+    if (info2) {
+      if (info2.attributes) {
+        for (let key in info2.attributes) {
+          if (typeof info2.attributes[key] === "function") {
+            const func = info2.attributes[key];
             element[key] = (...args) => {
               const context = esm2.__esProxy ?? esm2;
               return func.call(context ?? esm2, ...args);
             };
           } else
-            element[key] = info.attributes[key];
+            element[key] = info2.attributes[key];
         }
       }
-      if (element instanceof HTMLElement && info.style)
-        Object.assign(element.style, info.style);
+      if (element instanceof HTMLElement && info2.style)
+        Object.assign(element.style, info2.style);
     }
   }
   Object.defineProperty(esm2, "esElement", {
@@ -903,7 +1031,9 @@ var create_default = (id, esm2, parent) => {
         console.error(`Could not start component ${name} because it does not have an esInit function`);
     }
     if (esm2.hasOwnProperty("esTrigger")) {
-      esm2.default(esm2.esTrigger);
+      if (!Array.isArray(esm2.esTrigger))
+        esm2.esTrigger = [];
+      esm2.default(...esm2.esTrigger);
       delete esm2.esTrigger;
     }
     const context = esm2.__esProxy ?? esm2;
@@ -941,8 +1071,8 @@ var create_default = (id, esm2, parent) => {
 // ../common/clone.js
 var deep = (obj, opts = {}) => {
   opts.accumulator = {};
-  drillSimple(obj, (key, val, info) => {
-    if (info.simple && info.object)
+  drillSimple(obj, (key, val, info2) => {
+    if (info2.simple && info2.object)
       return Array.isArray(val) ? [] : {};
     else
       return val;
@@ -972,9 +1102,9 @@ var drill = (o, id, parent, path = [], opts) => {
 var setListeners = (context, components) => {
   context.listeners = {};
   for (let absPath in components) {
-    const info = components[absPath];
-    const listeners = info.instance.esListeners;
-    for (let path in listeners) {
+    const info2 = components[absPath];
+    const listeners2 = info2.instance.esListeners;
+    for (let path in listeners2) {
       const basePath = [context.id];
       const topPath = [];
       if (absPath)
@@ -988,13 +1118,13 @@ var setListeners = (context, components) => {
       const joined = topPath.join(context.options.keySeparator);
       if (!context.listeners[joined])
         context.listeners[joined] = {};
-      const value = listeners[path];
+      const value = listeners2[path];
       if (typeof value === "object")
-        context.listeners[joined] = { ...listeners[path] };
+        context.listeners[joined] = { ...listeners2[path] };
       else
         context.listeners[joined] = value;
-      context.monitor.on(basePath, (path2, info2, args) => {
-        passToListeners(context, absPath, path2, info2, args), context.options.listeners;
+      context.monitor.on(basePath, (path2, info3, args) => {
+        passToListeners(context, absPath, path2, info3, args), context.options.listeners;
       });
     }
   }
@@ -1006,13 +1136,14 @@ function pass(from, target, args, context) {
   parent = target.parent;
   key = target.key;
   root = target.root;
+  const rootArr = root.split(context.options.keySeparator);
   target = target.parent[key];
   let ogValue = target;
   const type = typeof target;
   const checkIfSetter = (path) => {
-    const info = context.monitor.get(path, "info");
-    if (info.exists) {
-      const val = info.value;
+    const info2 = context.monitor.get(path, "info");
+    if (info2.exists) {
+      const val = info2.value;
       const noDefault = typeof val !== "function" && !val?.default;
       if (noDefault)
         target = toSet;
@@ -1025,7 +1156,7 @@ function pass(from, target, args, context) {
     if (!isValue) {
       const fullPath = [id];
       if (root)
-        fullPath.push(root);
+        fullPath.push(...rootArr);
       fullPath.push(...key.split(context.options.keySeparator));
       checkIfSetter(fullPath);
     } else
@@ -1034,21 +1165,22 @@ function pass(from, target, args, context) {
     const path = [id];
     const topPath = [];
     if (root)
-      topPath.push(root);
-    topPath.push(...target.split(context.options.keySeparator));
+      topPath.push(...rootArr);
+    topPath.push(...ogValue.split(context.options.keySeparator));
     path.push(...topPath);
     checkIfSetter(path);
-    if (isValue)
-      parent[key] = { [ogValue]: parent[key] };
+    const absPath = topPath.join(context.options.keySeparator);
+    if (isValue) {
+      parent[key] = { [absPath]: parent[key] };
+      key = absPath;
+    }
   }
   if (target === toSet) {
     const parentPath = [id];
-    if (root)
-      parentPath.push(root);
     parentPath.push(...key.split(context.options.keySeparator));
     const idx = parentPath.pop();
-    const info = context.monitor.get(parentPath, "info");
-    info.value[idx] = args[0];
+    const info2 = context.monitor.get(parentPath, "info");
+    info2.value[idx] = args[0];
   } else if (target?.default)
     target.default(...args);
   else if (typeof target === "function")
@@ -1057,18 +1189,18 @@ function pass(from, target, args, context) {
     try {
       const parentPath = [id];
       if (root)
-        parentPath.push(root);
+        parentPath.push(...rootArr);
       parentPath.push(...key.split(context.options.keySeparator));
       const idx = parentPath.pop();
-      const info = context.monitor.get(parentPath, "info");
+      const info2 = context.monitor.get(parentPath, "info");
       const arg = args[0];
       if (target.esBranch) {
         target.esBranch.forEach((o) => {
           if (o.equals === arg)
-            info.value[idx] = o.value;
+            info2.value[idx] = o.value;
         });
       } else
-        info.value[idx] = target;
+        info2.value[idx] = target;
     } catch (e) {
       let baseMessage = `listener: ${from} \u2014> ${key}`;
       if (parent) {
@@ -1079,7 +1211,7 @@ function pass(from, target, args, context) {
     }
   }
 }
-function passToListeners(context, root, name, info, ...args) {
+function passToListeners(context, root, name, info2, ...args) {
   const sep = context.options.keySeparator;
   const noDefault = name.slice(0, -`${sep}${defaultPath}`.length);
   const listenerGroups = [{
@@ -1090,20 +1222,20 @@ function passToListeners(context, root, name, info, ...args) {
     name: noDefault
   }];
   listenerGroups.forEach((group) => {
-    const info2 = group.info;
-    if (info2) {
-      if (typeof info2 === "object") {
-        for (let key in info2) {
+    const info3 = group.info;
+    if (info3) {
+      if (typeof info3 === "object") {
+        for (let key in info3) {
           pass(name, {
-            parent: info2,
+            parent: info3,
             key,
             root,
-            value: info2[key]
+            value: info3[key]
           }, args, context);
         }
       } else {
         pass(name, {
-          value: info2,
+          value: info3,
           parent: context.listeners,
           key: group.name,
           root,
@@ -1129,6 +1261,7 @@ var create2 = (config, options = {}) => {
     }
     monitor = new src_default(options.monitor);
   }
+  monitor.options.fallbacks = ["esComponents"];
   const fullOptions = options;
   const id = Symbol("root");
   const components = {};
@@ -1137,7 +1270,7 @@ var create2 = (config, options = {}) => {
     keySeparator: fullOptions.keySeparator
   });
   let fullInstance = instance;
-  monitor.set(id, fullInstance);
+  monitor.set(id, fullInstance, { static: false });
   const context = {
     id,
     instance: fullInstance,
