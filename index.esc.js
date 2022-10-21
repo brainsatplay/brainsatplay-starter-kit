@@ -221,7 +221,7 @@ export const esListeners = {
 
         // Threshold Control
         average: 'threshold',
-        threshold: "game.player.jump",
+        threshold: "game.companion.jump",
         datastreams: {
             timeseries: true,
             average: true
