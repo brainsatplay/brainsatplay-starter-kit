@@ -57,7 +57,7 @@ export const esComponents = {
     game: {
         esCompose: game,
         preload: {
-            setBaseURL: "https://raw.githubusercontent.com/brainsatplay/escode/main/drafts/demos/phaser/assets",
+            setBaseURL: "https://raw.githubusercontent.com/brainsatplay/escode/main/apps/showcase/demos/phaser/assets",
             tilemapTiledJSON: [
                 [
                     "map",
@@ -148,7 +148,7 @@ esComponents.average = {
 },
 
 esComponents.threshold = {
-    threshold: 300,
+    value: 300,
     esCompose: threshold,
 },
     

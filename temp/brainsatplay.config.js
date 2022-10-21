@@ -31,14 +31,14 @@ export default {
         ['downloads/components/phaser/player.js']: "https://raw.githubusercontent.com/brainsatplay/escode/main/components/phaser/player.js",
 
         // --------------- Scripts ---------------
-        ['downloads/scripts/player/create.js']: "https://raw.githubusercontent.com/brainsatplay/escode/main/drafts/demos/phaser/scripts/create.js",
+        ['downloads/scripts/player/create.js']: "https://raw.githubusercontent.com/brainsatplay/escode/main/apps/showcase/demos/phaser/scripts/create.js",
 
-        ['downloads/scripts/player/create/main.js']: "https://raw.githubusercontent.com/brainsatplay/escode/main/drafts/demos/phaser/scripts/player/create/main.js",
-        ['downloads/scripts/player/create/base.js']: "https://raw.githubusercontent.com/brainsatplay/escode/main/drafts/demos/phaser/scripts/player/create/base.js",
+        ['downloads/scripts/player/create/main.js']: "https://raw.githubusercontent.com/brainsatplay/escode/main/apps/showcase/demos/phaser/scripts/player/create/main.js",
+        ['downloads/scripts/player/create/base.js']: "https://raw.githubusercontent.com/brainsatplay/escode/main/apps/showcase/demos/phaser/scripts/player/create/base.js",
 
-        ['downloads/scripts/player/update.js']: "https://raw.githubusercontent.com/brainsatplay/escode/main/drafts/demos/phaser/scripts/player/update.js",
+        ['downloads/scripts/player/update.js']: "https://raw.githubusercontent.com/brainsatplay/escode/main/apps/showcase/demos/phaser/scripts/player/update.js",
 
-        ['downloads/scripts/player/create/companion.js']: "https://raw.githubusercontent.com/brainsatplay/escode/main/drafts/demos/phaser/scripts/player/create/companion.js",
+        ['downloads/scripts/player/create/companion.js']: "https://raw.githubusercontent.com/brainsatplay/escode/main/apps/showcase/demos/phaser/scripts/player/create/companion.js",
 
     }
 }
