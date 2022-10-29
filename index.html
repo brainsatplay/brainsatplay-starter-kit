@@ -13,22 +13,14 @@
 <!-- <script type="module" src="./dist/index.js"></script> -->
 <script type="module">
 
-    // --------------------- Import the Brains@Play Framework Library ---------------------
+    // --------------------- Import ESCompose ---------------------
     import escompose from './libraries/escompose/index.esm.js'
+
+    // --------------------- Import ES Component ---------------------
     import * as escFile from './index.esc.js'
 
-    // // --------------------- Instantiate the Application ---------------------
-    const esc = escompose(escFile, {
-
-        // Create a monitor with this configuration
-        monitor: {
-            pathFormat: 'absolute',
-            polling: { sps: 60 }
-        }, 
-
-        // // Will be able to track new keys added to the object
-        // listeners: { static: false }
-    })
+    // // --------------------- Instantiate the Component ---------------------
+    const esc = escompose(escFile)
 
     // --------------------- Attach to DOM ---------------------
     const ui = document.getElementById('app')
