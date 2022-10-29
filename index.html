@@ -17,9 +17,6 @@
     import escompose from './libraries/escompose/index.esm.js'
     import * as escFile from './index.esc.js'
 
-    console.log('escFile', escFile)
-
-
     // // --------------------- Instantiate the Application ---------------------
     const esc = escompose(escFile, {
 
@@ -29,8 +26,8 @@
             polling: { sps: 60 }
         }, 
 
-        // Will be able to track new keys added to the object
-        listeners: { static: false }
+        // // Will be able to track new keys added to the object
+        // listeners: { static: false }
     })
 
     // --------------------- Attach to DOM ---------------------

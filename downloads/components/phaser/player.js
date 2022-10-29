@@ -5,6 +5,8 @@ export let size = {}
 export let position = {}
 export let jumpRefractoryPeriod = 2000 // wait until next jump
 
+export let velocity = 0
+
 export let create; // externally-specified create function
 export let update; // externally-specified update function
 

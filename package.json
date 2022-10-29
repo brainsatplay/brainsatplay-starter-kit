@@ -6,7 +6,7 @@
     "main": "index.js",
 
     "scripts": {
-        "start": "node temp/download.js"
+        "download": "node temp/download.js"
     },
 
     "devDependencies": {
