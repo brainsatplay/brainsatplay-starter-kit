@@ -6,4 +6,4 @@
 
 ## Extras
 ### Videos
-Accompanying tutorial videos and their code can be found in the `videos` directory.
+Accompanying tutorial content with source code can be found in the `content` directory.
