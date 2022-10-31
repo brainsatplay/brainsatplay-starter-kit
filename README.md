@@ -1,5 +1,9 @@
 # brainsatplay-starter-kit
- Template application for the [Brains@Play Framework](https://github.com/brainsatplay)
+ This repository will teach you **how to get started with [Brains@Play](https://github.com/brainsatplay): The Universal Web Development Framework**.
 
 ## The Basics
-This repository uses [ESCompile](https://github.com/brainsatplay/escode/blob/main/libraries/escompose) to instantiate a basic application from a **.esc.js** file.
+[ESCompile](https://github.com/brainsatplay/escode/blob/main/libraries/escompose) is used in all demos to instantiate applications from **.esc.js** files.
+
+## Extras
+### Videos
+Accompanying tutorial videos and their code can be found in the `videos` directory.

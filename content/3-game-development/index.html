@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Brains@Play Starter Kit | Game Development</title>
+    <style> html, body { width: 100vw; height: 100vh; margin: 0; overflow: hidden; } </style>
+</head>
+<body>
+</body>
+<!-- <script type="module" src="./dist/index.js"></script> -->
+<script type="module">
+
+    // --------------------- Import ESCompose ---------------------
+    import * as escompose from '../../../libraries/escompose/index.esm.js'
+
+    // --------------------- Import a Basic ES Component ---------------------
+    // import * as escFile from './index.esc.js'
+    // import * as escFile from './controlled.esc.js'
+    import * as escFile from './multimodal.esc.js'
+
+    // --------------------- Instantiate the Component ---------------------
+    const esc = escompose.create(escFile)
+
+    // --------------------- Attach to DOM ---------------------
+    esc.esParent = document.body
+
+</script>
+
+</html>

@@ -15,12 +15,17 @@
 
     // --------------------- Import ESCompose ---------------------
     import escompose from './libraries/escompose/index.esm.js'
+    import * as escode from './libraries/escode/index.esm.js'
 
     // --------------------- Import ES Component ---------------------
-    import * as escFile from './index.esc.js'
+    import * as escFile from './content/5-education/index.esc.js'
 
     // // --------------------- Instantiate the Component ---------------------
-    const esc = escompose(escFile)
+    const esc = escompose(escFile, {
+        utilities: {
+            code: escode.Editor
+        }
+    })
 
     // --------------------- Attach to DOM ---------------------
     const ui = document.getElementById('app')

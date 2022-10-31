@@ -1012,10 +1012,15 @@ function create(id, esm2, parent, states, utilities = {}) {
           states.element.insertAdjacentElement("afterend", v);
           states.element.remove();
         }
+
+        const has = !!states.element;
+
         states.element = v;
-        for (let name in esm2.esDOM) {
-          const component = esm2.esDOM[name];
-          component.esParent = v;
+        if (states.connected) {
+          for (let name in esm2.esDOM) {
+            const component = esm2.esDOM[name];
+            component.esParent = v;
+          }
         }
         setAttributes(states.attributes);
       }
@@ -1139,6 +1144,7 @@ var define = (config, esm2) => {
       }
       connectedCallback() {
         console.log("Custom element added to page.");
+        this.__esComponent.__esReady();
       }
       disconnectedCallback() {
         console.log("Custom element removed from page.");
@@ -1198,12 +1204,13 @@ var create_default = (id, esm2, parent, utilities = {}) => {
     if (info2.name && info2.extends)
       define(info2, esm3);
   }
-  const states = {};
+  const states = {connected: false};
   let el = create(id, esm2, parent, states, utilities);
   const finalStates = states;
   esm2.esElement = el;
   const ogInit = esm2.esConnected;
   esm2.esConnected = async () => {
+    states.connected = true
     await esm2.esReady;
     for (let name in esm2.esDOM) {
       const init = esm2.esDOM[name].esConnected;
@@ -1385,13 +1392,14 @@ var esDrill = (o, id, parent, opts) => {
   const path = parentId ? [parentId, id] : typeof id === "string" ? [id] : [];
   const merged = esMerge(o, o.esCompose, path);
   delete merged.esCompose;
+
   const instance = create_default(id, merged, parent, opts.utilities);
   const savePath = path.join(opts.keySeparator ?? keySeparator);
   if (opts?.components)
     opts.components[savePath] = { instance, depth: parent ? path.length + 1 : path.length };
   if (instance.esDOM) {
     for (let name in instance.esDOM) {
-      const base = instance.esDOM[name];
+      const base = instance.esDOM[name]
       const thisInstance = esDrill(base, name, instance, opts);
       instance.esDOM[name] = thisInstance;
     }
