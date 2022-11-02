@@ -21,6 +21,8 @@ export const esAttributes = {
 const maxHeight = '400px'
 gameDemo.esAttributes.style.height = maxHeight
 
+// const esCode = undefined
+
 const esCode = {
     style: {
         height: maxHeight,
@@ -112,6 +114,7 @@ export const esDOM = {
     physiologicalsignals: {
         esCode,
         esCompose: physiologicalSignalsDemo,
+        // esChildPosition: 0
     },
 
     hr2: {

@@ -14,22 +14,46 @@
 <script type="module">
 
     // --------------------- Import ESCompose ---------------------
-    import escompose from './libraries/escompose/index.esm.js'
+    import * as escompose from './libraries/escompose/index.esm.js'
     import * as escode from './libraries/escode/index.esm.js'
+    import * as esm from './libraries/esmpile/index.esm.js'
 
     // --------------------- Import ES Component ---------------------
     import * as escFile from './content/5-education/index.esc.js'
 
-    // // --------------------- Instantiate the Component ---------------------
-    const esc = escompose(escFile, {
-        utilities: {
-            code: escode.Editor
-        }
-    })
+    // const demo = escFile
+    const demo = {
+        esReference: escFile,
+        esURI: './content/5-education/index.esc.js'
+    }
 
-    // --------------------- Attach to DOM ---------------------
+    const component = {
+        esCompose: demo,
+    }
+
+    // // --------------------- Instantiate the Component ---------------------
     const ui = document.getElementById('app')
-    esc.esParent = ui
+
+    const properties = { esParent: ui }
+    const options = {
+        utilities: {
+            code: {
+                class: escode.Editor
+            },
+            bundle: {
+                function: esm.bundle.get,
+                options: {
+                    relativeTo: window.location.href,
+                }
+            }
+        },
+    }
+
+    const esc = escompose.create(
+        component, // Base component
+        properties, // Additional properties
+        options // Creation options
+    )
 
 </script>
 

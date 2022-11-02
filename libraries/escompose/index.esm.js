@@ -917,6 +917,60 @@ var Monitor = class {
 // ../esmonitor/src/index.ts
 var src_default = Monitor;
 
+// src/utils.ts
+var isPromise = (o) => typeof o === "object" && typeof o.then === "function";
+var resolve = (object, callback) => {
+  if (typeof object === "object" && Array.isArray(object) && object.find((v) => isPromise(v)))
+    object = Promise.all(object);
+  if (isPromise(object)) {
+    return new Promise((resolve3) => {
+      object.then((res) => {
+        const output = callback ? callback(res) : res;
+        resolve3(output);
+      });
+    });
+  } else {
+    return callback ? callback(object) : object;
+  }
+};
+var merge = (main, override, path = []) => {
+  const copy = Object.assign({}, main);
+  if (override) {
+    const keys = Object.keys(copy);
+    const newKeys = new Set(Object.keys(override));
+    keys.forEach((k) => {
+      newKeys.delete(k);
+      const thisPath = [...path, k];
+      if (typeof override[k] === "object" && !Array.isArray(override[k])) {
+        if (typeof copy[k] === "object")
+          copy[k] = merge(copy[k], override[k], thisPath);
+        else
+          copy[k] = override[k];
+      } else if (typeof override[k] === "function") {
+        const original = copy[k];
+        const isFunc = typeof original === "function";
+        if (isFunc && !original.functionList)
+          original.functionList = [original];
+        const newFunc = override[k];
+        if (!isFunc || !original.functionList.includes(newFunc)) {
+          const func = copy[k] = function(...args) {
+            if (isFunc)
+              original.call(this, ...args);
+            newFunc.call(this, ...args);
+          };
+          if (!func.functionList)
+            func.functionList = [original];
+          func.functionList.push(override);
+        } else
+          console.warn(`This function was already merged into ${thisPath.join(".")}. Ignoring duplicate.`);
+      } else if (k in override)
+        copy[k] = override[k];
+    });
+    newKeys.forEach((k) => copy[k] = override[k]);
+  }
+  return copy;
+};
+
 // src/create/element.ts
 function create(id, esm2, parent, states, utilities = {}) {
   let element = esm2.esElement;
@@ -961,7 +1015,9 @@ function create(id, esm2, parent, states, utilities = {}) {
   }
   let isReady;
   Object.defineProperty(esm2, "esReady", {
-    value: new Promise((resolve) => isReady = () => resolve(true)),
+    value: new Promise((resolve3) => isReady = async () => {
+      resolve3(true);
+    }),
     writable: false,
     enumerable: false
   });
@@ -1012,14 +1068,13 @@ function create(id, esm2, parent, states, utilities = {}) {
           states.element.insertAdjacentElement("afterend", v);
           states.element.remove();
         }
-
-        const has = !!states.element;
-
         states.element = v;
-        if (states.connected) {
+        if (esm2.__isESComponent !== void 0) {
           for (let name in esm2.esDOM) {
             const component = esm2.esDOM[name];
-            component.esParent = v;
+            resolve(component, (res) => {
+              res.esParent = v;
+            });
           }
         }
         setAttributes(states.attributes);
@@ -1047,17 +1102,24 @@ function create(id, esm2, parent, states, utilities = {}) {
         if (esm2.esElement.parentNode)
           esm2.esElement.remove();
         if (v) {
+          const desiredPosition = esm2.esChildPosition;
+          const nextPosition = v.children.length;
+          let ref = esm2.esElement;
           if (esm2.__esCode) {
             esm2.__esCode.setComponent(esm2);
-            v.appendChild(esm2.__esCode);
-          } else
-            v.appendChild(esm2.esElement);
+            ref = esm2.__esCode;
+          }
+          if (desiredPosition !== void 0 && desiredPosition < nextPosition)
+            v.children[desiredPosition].insertAdjacentElement("beforebegin", ref);
+          else
+            v.appendChild(ref);
         }
       } else {
         console.error("No element was created for this Component...", esm2);
       }
-      if (v instanceof HTMLElement)
+      if (v instanceof HTMLElement) {
         esm2.__esReady();
+      }
     },
     enumerable: true
   });
@@ -1084,16 +1146,18 @@ function create(id, esm2, parent, states, utilities = {}) {
   });
   if (esm2.esCode) {
     let config = esm2.esCode;
-    let cls = utilities.code;
+    let cls = utilities.code?.class;
     if (!cls) {
-      if (typeof esm2.esCode === "function") {
+      if (typeof esm2.esCode === "function")
         cls = esm2.esCode;
-        config = true;
-      } else
+      else
         console.error("Editor class not provided in options.utilities.code");
-    } else {
-      let finalConfig = typeof config === "boolean" ? {} : config;
-      const esCode = new cls(finalConfig);
+    }
+    if (cls) {
+      let options = utilities.code?.options ?? {};
+      options = typeof config === "boolean" ? options : { ...options, ...config };
+      const esCode = new cls(options);
+      esCode.start();
       Object.defineProperty(esm2, "__esCode", { value: esCode });
     }
   }
@@ -1139,12 +1203,13 @@ var define = (config, esm2) => {
     class ESComponent extends BaseClass {
       constructor(properties) {
         super(properties);
-        esm2.esElement = this;
-        this.__esComponent = src_default2(esm2);
+        resolve(src_default2(esm2), (res) => {
+          res.esElement = this;
+        });
       }
       connectedCallback() {
         console.log("Custom element added to page.");
-        this.__esComponent.__esReady();
+        this.esComponent.__esReady();
       }
       disconnectedCallback() {
         console.log("Custom element removed from page.");
@@ -1173,8 +1238,16 @@ var define = (config, esm2) => {
 
 // ../common/clone.js
 var deep = (obj, opts = {}) => {
-  obj = Object.assign({}, obj);
-  opts.accumulator = Array.isArray(obj) ? [] : {};
+  if (typeof obj === "object") {
+    if (Array.isArray(obj)) {
+      obj = [...obj];
+      opts.accumulator = [];
+    } else {
+      obj = { ...obj };
+      opts.accumulator = {};
+    }
+  } else
+    return obj;
   drillSimple(obj, (key, val, info2) => {
     if (info2.simple && info2.object)
       return Array.isArray(val) ? [] : {};
@@ -1187,224 +1260,301 @@ var deep = (obj, opts = {}) => {
 // src/create/index.ts
 var animations = {};
 var create_default = (id, esm2, parent, utilities = {}) => {
+  const states = {
+    connected: false
+  };
   const copy = deep(esm2);
-  for (let name in esm2.esDOM) {
-    const value = esm2.esDOM[name];
-    const isUndefined = value == void 0;
-    const type = isUndefined ? JSON.stringify(value) : typeof value;
-    if (type != "object") {
-      console.error(`Removing ${name} esDOM field that which is not an ES Component object. Got ${isUndefined ? type : `a ${type}`} instead.`);
-      delete esm2.esDOM[name];
-    }
-  }
-  let registry2 = esm2.esComponents ?? {};
-  for (let key in registry2) {
-    const esm3 = registry2[key];
-    const info2 = esm3.esElement;
-    if (info2.name && info2.extends)
-      define(info2, esm3);
-  }
-  const states = {connected: false};
-  let el = create(id, esm2, parent, states, utilities);
-  const finalStates = states;
-  esm2.esElement = el;
-  const ogInit = esm2.esConnected;
-  esm2.esConnected = async () => {
-    states.connected = true
-    await esm2.esReady;
+  try {
     for (let name in esm2.esDOM) {
-      const init = esm2.esDOM[name].esConnected;
-      if (typeof init === "function")
-        init();
-      else
-        console.error(`Could not start component ${name} because it does not have an esConnected function`);
-    }
-    const context = esm2.__esProxy ?? esm2;
-    if (ogInit)
-      ogInit.call(context);
-    if (esm2.hasOwnProperty("esTrigger")) {
-      if (!Array.isArray(esm2.esTrigger))
-        esm2.esTrigger = [];
-      esm2.default(...esm2.esTrigger);
-      delete esm2.esTrigger;
-    }
-    if (esm2.esAnimate) {
-      let original = esm2.esAnimate;
-      const id2 = Math.random();
-      const interval = typeof original === "number" ? original : "global";
-      if (!animations[interval]) {
-        const info2 = animations[interval] = { objects: { [id2]: esm2 } };
-        const objects2 = info2.objects;
-        const runFuncs = () => {
-          for (let key in objects2)
-            objects2[key].default();
-        };
-        if (interval === "global") {
-          const callback = () => {
-            runFuncs();
-            info2.id = window.requestAnimationFrame(callback);
-          };
-          callback();
-          animations[interval].stop = () => {
-            window.cancelAnimationFrame(info2.id);
-            info2.cancel = true;
-          };
-        } else {
-          info2.id = setInterval(() => runFuncs(), 1e3 / interval);
-          animations[interval].stop = () => clearInterval(info2.id);
-        }
-      } else
-        animations[interval].objects[id2] = esm2;
-      esm2.esAnimate = {
-        id: id2,
-        original,
-        stop: () => {
-          delete animations[interval].objects[id2];
-          esm2.esAnimate = original;
-          if (Object.keys(animations[interval].objects).length === 0) {
-            animations[interval].stop();
-            delete animations[interval];
-          }
-        }
-      };
-    }
-  };
-  const ogDelete = esm2.esDisconnected;
-  esm2.esDisconnected = function() {
-    if (this.esElement instanceof Element) {
-      this.esElement.remove();
-      if (this.onremove) {
-        const context2 = esm2.__esProxy ?? esm2;
-        this.onremove.call(context2);
+      const value = esm2.esDOM[name];
+      const isUndefined = value == void 0;
+      const type = isUndefined ? JSON.stringify(value) : typeof value;
+      if (type != "object") {
+        console.error(`Removing ${name} esDOM field that which is not an ES Component object. Got ${isUndefined ? type : `a ${type}`} instead.`);
+        delete esm2.esDOM[name];
       }
     }
-    if (esm2.esAnimate && typeof esm2.esAnimate.stop === "function")
-      esm2.esAnimate.stop();
-    if (esm2.esListeners)
-      esm2.esListeners.__manager.clear();
-    if (esm2.esDOM) {
-      for (let name in esm2.esDOM) {
-        const component = esm2.esDOM[name];
-        if (typeof component.esDisconnected === "function")
-          component.esDisconnected();
-        else
-          console.error("Could not disconnect component because it does not have an esDisconnected function", name, esm2.esDOM);
-      }
+    let registry2 = esm2.esComponents ?? {};
+    for (let key in registry2) {
+      const esm3 = registry2[key];
+      const info2 = esm3.esElement;
+      if (info2.name && info2.extends)
+        define(info2, esm3);
     }
-    if (esm2.__esCode)
-      esm2.__esCode.remove();
-    const context = esm2.__esProxy ?? esm2;
-    if (ogDelete)
-      ogDelete.call(context);
-    esm2.esConnected = ogInit;
-    esm2.esDisconnected = ogDelete;
-  };
-  for (let key in esm2) {
-    if (typeof esm2[key] === "function") {
-      const desc = Object.getOwnPropertyDescriptor(esm2, key);
-      if (desc && desc.get && !desc.set)
-        esm2 = Object.assign({}, esm2);
-      const og = esm2[key];
-      esm2[key] = (...args) => {
-        const context = esm2.__esProxy ?? esm2;
-        return og.call(context, ...args);
-      };
-    }
-  }
-  const isESC = { value: "", enumerable: false };
-  if (typeof id === "string") {
-    if (parent?.__isESComponent)
-      isESC.value = [parent.__isESComponent, id];
-    else
-      isESC.value = [id];
-    isESC.value = isESC.value.join(keySeparator);
-  }
-  Object.defineProperty(esm2, "__isESComponent", isESC);
-  Object.defineProperty(esm2, "esOriginal", { value: copy, enumerable: false });
-  esm2.esOnResize = finalStates.onresize;
-  esm2.esParent = finalStates.parentNode;
-  return esm2;
-};
 
-// src/utils.ts
-var merge = (main, override, path = []) => {
-  const copy = Object.assign({}, main);
-  if (override) {
-    const keys = Object.keys(copy);
-    const newKeys = new Set(Object.keys(override));
-    keys.forEach((k) => {
-      newKeys.delete(k);
-      const thisPath = [...path, k];
-      if (typeof override[k] === "object" && !Array.isArray(override[k])) {
-        if (typeof copy[k] === "object")
-          copy[k] = merge(copy[k], override[k], thisPath);
+
+    if (esm2.__esmpileSourceBundle) {
+      esm2.esSource =  esm2.__esmpileSourceBundle()
+      delete esm2.__esmpileSourceBundle
+    }
+
+    let el = create(id, esm2, parent, states, utilities);
+    const finalStates = states;
+    esm2.esElement = el;
+    const ogInit = esm2.esConnected;
+    esm2.esConnected = async (onReadyCallback) => {
+      await esm2.esReady;
+      states.connected = true;
+      for (let name in esm2.esDOM) {
+        let component = esm2.esDOM[name];
+        if (typeof component === "object" && typeof component.then === "function")
+          component = esm2.esDOM[name] = await component;
+        const init = component.esConnected;
+        if (typeof init === "function")
+          await init();
         else
-          copy[k] = override[k];
-      } else if (typeof override[k] === "function") {
-        const original = copy[k];
-        const isFunc = typeof original === "function";
-        if (isFunc && !original.functionList)
-          original.functionList = [original];
-        const newFunc = override[k];
-        if (!isFunc || !original.functionList.includes(newFunc)) {
-          const func = copy[k] = function(...args) {
-            if (isFunc)
-              original.call(this, ...args);
-            newFunc.call(this, ...args);
+          console.error(`Could not start component ${name} because it does not have an esConnected function`);
+      }
+      if (onReadyCallback)
+        await onReadyCallback();
+      const esCode = esm2.esParent?.esComponent?.__esCode;
+      if (esCode)
+        esm2.__esCode = esCode;
+
+      const source = esm2.esSource;
+      const path = esm2.__isESComponent;
+
+      if (source) {
+
+        if (esm2.__esCode)
+          esm2.__esCode.addFile(path, source);
+      }
+      
+
+
+
+      const context = esm2.__esProxy ?? esm2;
+      if (ogInit)
+        ogInit.call(context);
+      if (esm2.hasOwnProperty("esTrigger")) {
+        if (!Array.isArray(esm2.esTrigger))
+          esm2.esTrigger = [];
+        esm2.default(...esm2.esTrigger);
+        delete esm2.esTrigger;
+      }
+      if (esm2.esAnimate) {
+        let original = esm2.esAnimate;
+        const id2 = Math.random();
+        const interval = typeof original === "number" ? original : "global";
+        if (!animations[interval]) {
+          const info2 = animations[interval] = { objects: { [id2]: esm2 } };
+          const objects2 = info2.objects;
+          const runFuncs = () => {
+            for (let key in objects2)
+              objects2[key].default();
           };
-          if (!func.functionList)
-            func.functionList = [original];
-          func.functionList.push(override);
+          if (interval === "global") {
+            const callback = () => {
+              runFuncs();
+              info2.id = window.requestAnimationFrame(callback);
+            };
+            callback();
+            animations[interval].stop = () => {
+              window.cancelAnimationFrame(info2.id);
+              info2.cancel = true;
+            };
+          } else {
+            info2.id = setInterval(() => runFuncs(), 1e3 / interval);
+            animations[interval].stop = () => clearInterval(info2.id);
+          }
         } else
-          console.warn(`This function was already merged into ${thisPath.join(".")}. Ignoring duplicate.`);
-      } else if (k in override)
-        copy[k] = override[k];
-    });
-    newKeys.forEach((k) => copy[k] = override[k]);
+          animations[interval].objects[id2] = esm2;
+        esm2.esAnimate = {
+          id: id2,
+          original,
+          stop: () => {
+            delete animations[interval].objects[id2];
+            esm2.esAnimate = original;
+            if (Object.keys(animations[interval].objects).length === 0) {
+              animations[interval].stop();
+              delete animations[interval];
+            }
+          }
+        };
+      }
+    };
+    const ogDelete = esm2.esDisconnected;
+    esm2.esDisconnected = function() {
+      if (this.esElement instanceof Element) {
+        this.esElement.remove();
+        if (this.onremove) {
+          const context2 = esm2.__esProxy ?? esm2;
+          this.onremove.call(context2);
+        }
+      }
+      if (esm2.esAnimate && typeof esm2.esAnimate.stop === "function")
+        esm2.esAnimate.stop();
+      if (esm2.esListeners)
+        esm2.esListeners.__manager.clear();
+      if (esm2.esDOM) {
+        for (let name in esm2.esDOM) {
+          const component = esm2.esDOM[name];
+          if (typeof component.esDisconnected === "function")
+            component.esDisconnected();
+          else
+            console.error("Could not disconnect component because it does not have an esDisconnected function", name, esm2.esDOM);
+        }
+      }
+      if (esm2.__esCode)
+        esm2.__esCode.remove();
+      const context = esm2.__esProxy ?? esm2;
+      if (ogDelete)
+        ogDelete.call(context);
+      esm2.esConnected = ogInit;
+      esm2.esDisconnected = ogDelete;
+    };
+    for (let key in esm2) {
+      if (typeof esm2[key] === "function") {
+        const desc = Object.getOwnPropertyDescriptor(esm2, key);
+        if (desc && desc.get && !desc.set)
+          esm2 = Object.assign({}, esm2);
+        const og = esm2[key];
+        esm2[key] = (...args) => {
+          const context = esm2.__esProxy ?? esm2;
+          return og.call(context, ...args);
+        };
+      }
+    }
+    const isESC = { value: "", enumerable: false };
+    if (typeof id === "string") {
+      if (parent?.__isESComponent)
+        isESC.value = [parent.__isESComponent, id];
+      else
+        isESC.value = [id];
+      isESC.value = isESC.value.join(keySeparator);
+    }
+    Object.defineProperty(esm2, "__isESComponent", isESC);
+    Object.defineProperty(esm2, "esOriginal", { value: copy, enumerable: false });
+    esm2.esOnResize = finalStates.onresize;
+    esm2.esParent = finalStates.parentNode;
+    return esm2;
+  } catch (e) {
+    console.error(`Failed to create an ES Component (${id}):`, e);
+    return copy;
   }
-  return copy;
 };
 
 // src/index.ts
 var listenerObject = Symbol("listenerObject");
-var esMerge = (base, esCompose = {}, path = []) => {
+var createErrorComponent = (message) => {
+  return {
+    esElement: "p",
+    esDOM: {
+      b: {
+        esElement: "b",
+        esAttributes: {
+          innerText: "Error: "
+        }
+      },
+      span: {
+        esElement: "span",
+        esAttributes: {
+          innerText: message
+        }
+      }
+    }
+  };
+};
+var esCompile = (o, utilities) => {
+  let uri = typeof o === "string" ? o : o.esURI;
+  if (uri) {
+    return new Promise(async (resolve3) => {
+      try {
+        if (typeof utilities.bundle.function === "function") {
+          const foo = utilities.bundle.function;
+          const options = utilities.bundle.options ?? {};
+          if (!options.bundler)
+            options.bundler = "datauri";
+          if (!options.bundle)
+            options.collection = "global";
+            
+          const bundle = foo(uri, options);
+          await bundle.compile();
+          o = Object.assign({}, bundle.result);
+        } else if (typeof utilities.compile.function === "function") {
+          const resolved = await utilities.compile.function(o, utilities.compile.options);
+          o = resolved;
+        } else {
+          throw new Error("Cannot transform esCompose string without a compose utility function");
+        }
+      } catch (e) {
+        if (o.esReference) {
+          console.warn("[escompose]: Falling back to ES Component reference...", e);
+          o = o.esReference;
+        } else
+          o = createErrorComponent(e.message);
+      }
+      resolve3(deep(o));
+    });
+  }
+  return deep(o);
+};
+var esMerge = (base, esCompose = {}, path = [], utilities = {}) => {
   if (!Array.isArray(esCompose))
     esCompose = [esCompose];
-  let clonedEsCompose = esCompose.map((o) => {
-    const clone2 = deep(o);
-    let arr = [clone2];
-    let target = clone2;
-    while (target.esCompose) {
-      const val = target.esCompose;
-      delete target.esCompose;
-      target = val;
-      arr.push(val);
-    }
-    return arr;
-  }).flat();
-  let merged = Object.assign({}, base);
-  delete merged.esCompose;
-  clonedEsCompose.forEach((toCompose) => merged = merge(Object.assign({}, toCompose), merged, path));
-  return merged;
+  let promise = resolve(esCompose.map((o) => {
+    const compiled = esCompile(o, utilities);
+    return resolve(compiled, (compiled2) => {
+      let arr = [compiled2];
+      let target = compiled2;
+      while (target.esCompose) {
+        const val = target.esCompose;
+        delete target.esCompose;
+
+        target = resolve(esCompile(val, utilities));
+        
+        arr.push(target);
+      }
+      return arr;
+    });
+  }));
+  return resolve(promise, (clonedEsCompose) => {
+    const flat = clonedEsCompose.flat();
+    let merged = Object.assign({}, base);
+
+    flat.forEach((toCompose) => {
+      merged = merge(toCompose, merged, path);
+    });
+    return merged;
+  });
 };
-var esDrill = (o, id, parent, opts) => {
+var esDrill = (o, id, toMerge = {}, parent, opts) => {
   const parentId = parent?.__isESComponent;
   const path = parentId ? [parentId, id] : typeof id === "string" ? [id] : [];
-  const merged = esMerge(o, o.esCompose, path);
-  delete merged.esCompose;
-
-  const instance = create_default(id, merged, parent, opts.utilities);
-  const savePath = path.join(opts.keySeparator ?? keySeparator);
-  if (opts?.components)
-    opts.components[savePath] = { instance, depth: parent ? path.length + 1 : path.length };
-  if (instance.esDOM) {
-    for (let name in instance.esDOM) {
-      const base = instance.esDOM[name]
-      const thisInstance = esDrill(base, name, instance, opts);
-      instance.esDOM[name] = thisInstance;
+  const firstMerge = merge(toMerge, o, path);
+  const merged = esMerge(firstMerge, o.esCompose, path, opts.utilities);
+  return resolve(merged, (merged2) => {
+    delete merged2.esCompose;
+    const instance = create_default(id, merged2, parent, opts.utilities);
+    const savePath = path.join(opts.keySeparator ?? keySeparator);
+    if (opts?.components)
+      opts.components[savePath] = { instance, depth: parent ? path.length + 1 : path.length };
+    if (instance.esDOM) {
+      let positions = /* @__PURE__ */ new Set();
+      let position = 0;
+      for (let name in instance.esDOM) {
+        const base = instance.esDOM[name];
+        const pos = base.esChildPosition;
+        if (pos !== void 0) {
+          if (positions.has(pos))
+            console.warn(`[escompose]: Duplicate esChildPosition value of ${pos} found in ${name} of ${instance.__isESComponent}`);
+          else
+            positions.add(pos);
+        } else {
+          while (positions.has(position))
+            position++;
+          base.esChildPosition = position;
+          positions.add(position);
+        }
+        const promise = esDrill(base, name, void 0, instance, opts);
+        instance.esDOM[name] = promise;
+        resolve2(promise, (res) => {
+          instance.esDOM[name] = res;
+        });
+      }
     }
-  }
-  return instance;
+    return instance;
+  });
 };
 var handleListenerValue = ({
   context,
@@ -1697,7 +1847,7 @@ function passToListeners(context, listeners2, name, update) {
   });
 }
 var toSet = Symbol("toSet");
-var create2 = (config, options = {}) => {
+var create2 = (config, toMerge = {}, options = {}) => {
   let monitor;
   if (options.monitor instanceof src_default) {
     monitor = options.monitor;
@@ -1722,40 +1872,51 @@ var create2 = (config, options = {}) => {
     keySeparator: fullOptions.keySeparator,
     utilities: fullOptions.utilities
   };
-  let fullInstance;
-  let toTrigger;
+  let instancePromiseOrObject;
+  let context;
+  const onConnected = (instance) => {
+    instance.esConnected(() => {
+      if (context) {
+        const toTrigger = setListeners(context, components);
+        toTrigger.forEach((o) => {
+          const res = monitor.get(o.path, "info");
+          if (typeof res.value === "function") {
+            const args = Array.isArray(o.config.esTrigger) ? o.config.esTrigger : [o.config.esTrigger];
+            res.value(...args);
+          } else
+            console.error("Cannot yet trigger values...", o);
+        });
+      }
+    }, true);
+  };
   if (options.nested?.parent && options.nested?.name) {
-    fullInstance = esDrill(config, options.nested.name, options.nested.parent, drillOpts);
+    instancePromiseOrObject = esDrill(config, options.nested.name, toMerge, options.nested.parent, drillOpts);
+    resolve(instancePromiseOrObject, onConnected);
   } else {
     const id = Symbol("root");
-    const instance = esDrill(config, id, void 0, drillOpts);
-    fullInstance = instance;
-    monitor.set(id, fullInstance, fullOptions.listeners);
-    const context = {
-      id,
-      instance: fullInstance,
-      monitor,
-      options: fullOptions
+    instancePromiseOrObject = esDrill(config, id, toMerge, void 0, drillOpts);
+    const set2 = (instance) => {
+      monitor.set(id, instance, fullOptions.listeners);
+      context = {
+        id,
+        instance,
+        monitor,
+        options: fullOptions
+      };
+      onConnected(instance);
     };
-    toTrigger = setListeners(context, components);
+    resolve(instancePromiseOrObject, set2);
   }
-  toTrigger.forEach((o) => {
-    const res = monitor.get(o.path, "info");
-    if (typeof res.value === "function") {
-      const args = Array.isArray(o.config.esTrigger) ? o.config.esTrigger : [o.config.esTrigger];
-      res.value(...args);
-    } else
-      console.error("Cannot yet trigger values...", o);
-  });
-  fullInstance.esConnected();
-  return fullInstance;
+  return instancePromiseOrObject;
 };
 var src_default2 = create2;
 var merge2 = esMerge;
 var clone = deep;
+var resolve2 = resolve;
 export {
   clone,
   create2 as create,
   src_default2 as default,
-  merge2 as merge
+  merge2 as merge,
+  resolve2 as resolve
 };
