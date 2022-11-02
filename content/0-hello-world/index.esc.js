@@ -1,11 +1,5 @@
 
-const h1 = {
-    esElement: 'h2',
-    esAttributes: {
-        innerText: 'Hello World'
-    }
-}
-
+import * as h1 from './components/h1.esc.js'
 
 export const esDOM = {
     h1
