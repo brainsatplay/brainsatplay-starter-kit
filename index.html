@@ -14,32 +14,39 @@
 <script type="module">
 
     // --------------------- Import ESCompose ---------------------
-    import * as escompose from './libraries/escompose/index.esm.js'
-    import * as escode from './libraries/escode/index.esm.js'
-    import * as esm from './libraries/esmpile/index.esm.js'
+    import { escompose, escode, esm } from './libraries/index.js'
 
-    // --------------------- Import ES Component ---------------------
-    import * as escFile from './content/5-education/index.esc.js'
+    // --------------------- Import a Basic ES Component ---------------------
+    import * as hello from './content/0-hello-world/index.esc.js'
+    import * as composition from './content/1-composition/index.esc.js'
+    import * as webcomponents from './content/2-web-components/index.esc.js'
+    import * as gamedevelopment from './content/3-game-development/index.esc.js'
+    import * as physiologicalsignals from './content/4-physiological-signals/index.esc.js'
+    import * as education from './content/5-education/index.esc.js'
+    const educationFromSourceText = { esCompose: { esReference: education, esURI: './content/5-education/index.esc.js' } }
 
-    // const demo = escFile
-    const demo = {
-        esReference: escFile,
-        esURI: './content/5-education/index.esc.js'
+    const esc = educationFromSourceText
+
+    // --------------------- Declare Properties to Apply ---------------------
+    const app = document.getElementById('app')
+    const properties = { 
+        esParent: app // Attach to DOM
     }
 
-    const component = {
-        esCompose: demo,
-    }
-
-    // // --------------------- Instantiate the Component ---------------------
-    const ui = document.getElementById('app')
-
-    const properties = { esParent: ui }
+    // --------------------- Specify Options ---------------------
     const options = {
         utilities: {
+
+            // Wait for Child Resolution to Complete
+            // This is relevant to asynchronous source text bundling
+            await: true,
+
+            // Editor Options
             code: {
                 class: escode.Editor
             },
+
+            // Bundler Options
             bundle: {
                 function: esm.bundle.get,
                 options: {
@@ -49,11 +56,28 @@
         },
     }
 
-    const esc = escompose.create(
-        component, // Base component
-        properties, // Additional properties
-        options // Creation options
+    // --------------------- Instantiate the Component ---------------------
+    let component = escompose.create(
+        esc, 
+        properties,
+        options
     )
+
+    // // --------------------- Wait for Complete Resolution ---------------------
+    component = await component
+    await component.esReady
+
+    // -------------------- External Component Changes ---------------------
+
+    if (esc === composition) {
+
+        component.esDOM.input.default('Set from program!')
+        const wait = 1000
+        setTimeout(() => {
+            component.esDOM.input.default(`Set ${wait}ms later!`)
+        }, wait)
+
+    }
 
 </script>
 
