@@ -7,10 +7,8 @@
 
  This framework has been designed from the bottom-up to support **visual reactive programming**. In addition to our CLI, we have on-browser visualization and editing tools to support the authoring and remixing of ES Components by anyone with a browser.
 
-## The Basics
-
 ## Installation
-To use the Brains@Play framework in your project, all you'll need to do is impoprt the core [ESCompose](https://github.com/brainsatplay/escode/blob/main/libraries/escompose) library into your code, which instantiates applications from **.esc.js** files.
+To use the Brains@Play framework in your project, all you'll need to do is import the core [ESCompose](https://github.com/brainsatplay/escode/blob/main/libraries/escompose) library into your code, which instantiates applications from **.esc.js** files.
 
 ```js
 import * as escompose from './libraries/escompose/index.esm.js'

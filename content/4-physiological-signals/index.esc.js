@@ -1,12 +1,13 @@
 // Previous Demo Components
-import * as game from  "../3-game-development/multimodal.esc.js"
-import * as button from  "../3-game-development/core/components/button.esc.js"
+import * as game from  "../3-game-development/controlled.esc.js"
 
 // New Demo Components
 import * as average from  "./components/average.esc.js"
 import * as threshold from  "./components/threshold.esc.js"
-import * as muse from  "./core/muse.esc.js"
-import * as start from  "./core/start.esc.js"
+
+// External Components
+import * as devices from 'https://cdn.jsdelivr.net/npm/escode-device@0.0.0'
+import * as timeseries from 'https://cdn.jsdelivr.net/npm/escode-plot-timeseries@0.0.1'
 
 export const esCompose = game
 
@@ -16,38 +17,64 @@ export const esListeners = {
     },
     threshold: 'average',
     average: {
-        start: true
+        'devices.output': {
+            esFormat: (o) => { 
+                const res = o[0]
+                if (!res) return
+                else return [res] // First channel only
+            }
+        }
     },
-    start: 'muse',
-    muse: 'buttons.connectMuse'
+    ['timeseries.plot']: 'devices.output',
 }
 
 export const esDOM = {
 
     // ---------- Blink Detector ----------
     average: {
-        maxBufferSize: 100,
+        maxBufferSize: 20,
         buffer: [],
         esCompose: average,
     },
     threshold: {
-        value: 300,
+        value: 100,
         esCompose: threshold,
     },
 
     // ---------- Device Connection ----------
-    muse,
+    devices,
 
-    buttons: {
+    timeseries: {
+        esCompose: timeseries,
+        esAttributes: {
+            style: {
+                position: "absolute",
+                bottom: "15px",
+                right: "15px",
+                width: "250px",
+                height: "150px",
+                zIndex: 1,
+            }
+        },
+
+        // Style the Internal Canvases
         esDOM: {
-            connectMuse: {
+            signalCanvas: {
                 esAttributes: {
-                    innerText: 'Connect Muse'
+                    style: {
+                        width: '100%',
+                        height: '150px'
+                    }
                 },
-                esCompose: button,
             },
-        }
+            overlayCanvas: {
+                esAttributes: {
+                    style: {
+                        width: '100%',
+                        height: '150px'
+                    }
+                },
+            },
+        },
     },
-
-    start,
 }

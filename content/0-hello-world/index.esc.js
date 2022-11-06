@@ -1,5 +1,5 @@
 export const esDOM = {
-    h1: {
+    header: {
         esElement: 'h2',
         esAttributes:{
             innerText: 'Hello World'

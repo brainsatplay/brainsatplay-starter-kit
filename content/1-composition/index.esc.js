@@ -9,7 +9,7 @@ export const esDOM = {
 }
 
 export const esListeners = {
-    h1: {
+    header: {
         input: true
     }
 }

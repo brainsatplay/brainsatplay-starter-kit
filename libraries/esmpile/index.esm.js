@@ -193,7 +193,7 @@ __export(sourceMap_exports, {
 
 // src/utils/transformations.js
 var extensionTransformations = ["ts", "js"];
-var allTransformations = [...extensionTransformations, transformation];
+var allTransformations = [null, ...extensionTransformations, transformation];
 var get3 = (uri) => {
   const pathExt = extension(uri);
   const abs = absolute(uri);
@@ -208,9 +208,9 @@ var get3 = (uri) => {
       };
     });
     if (uri.split("/").length === 1)
-      return [transformation, ...mapped];
+      return [transformation, uri, ...mapped];
     else
-      return [...mapped, transformation];
+      return [uri, ...mapped, transformation];
   } else if (abs)
     return [...allTransformations].reverse();
   else if (noExt)
@@ -235,6 +235,8 @@ var noExtension = (path3, repExt = "js") => {
   return path3;
 };
 var transformation2 = async (path3, transformation3, opts, force) => {
+  if (!transformation3)
+    return path3;
   const type = typeof transformation3;
   if (type === "string" && (!force || force === "string")) {
     return noExtension(path3, transformation3);

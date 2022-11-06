@@ -1,5 +1,5 @@
 import * as phaser from  "./index.esc.js"
-import * as keys from  "./core/components/keyboard.esc.js"
+import * as keys from  "./external/components/keyboard.esc.js"
 
 export const esCompose = phaser
 

@@ -9,3 +9,12 @@ html, body {
    width: 100vw;
     height: 100vh;
 }
+
+hr {
+    margin: 30px 0px;
+}
+
+escode-editor {
+    box-sizing: content-box;
+    margin: 30px 0px;
+}

@@ -1,5 +1,5 @@
-import * as game from  "../core/components/phaser/game/index.esc.js"
-import create from "../core/scripts/create.js"
+import * as game from  "../external/components/phaser/game/index.esc.js"
+import create from "../external/scripts/create.js"
 
 export const esAttributes = {
     style: {

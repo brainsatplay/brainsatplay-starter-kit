@@ -27,6 +27,8 @@
 
     const esc = educationFromSourceText
 
+    const inline = false
+
     // --------------------- Declare Properties to Apply ---------------------
     const app = document.getElementById('app')
     const properties = { 
@@ -66,17 +68,29 @@
     // // --------------------- Wait for Complete Resolution ---------------------
     component = await component
     await component.esReady
+    console.log('Got Component', component)
 
     // -------------------- External Component Changes ---------------------
+    if (inline) {
+        if (esc === hello) {
 
-    if (esc === composition) {
+            component.esDOM.h2.default('Set from program!')
+            const wait = 1000
+            setTimeout(() => {
+                component.esDOM.h2.default(`Set ${wait}ms later!`)
+            }, wait)
 
-        component.esDOM.input.default('Set from program!')
-        const wait = 1000
-        setTimeout(() => {
-            component.esDOM.input.default(`Set ${wait}ms later!`)
-        }, wait)
+        }
 
+        if (esc === composition) {
+
+            component.esDOM.input.default('Set from program!')
+            const wait = 1000
+            setTimeout(() => {
+                component.esDOM.input.default(`Set ${wait}ms later!`)
+            }, wait)
+
+        }
     }
 
 </script>

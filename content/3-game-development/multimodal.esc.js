@@ -1,6 +1,6 @@
 import * as controlled from  "./controlled.esc.js"
-import * as button from  "./core/components/button.esc.js"
-import * as speak from "./core/components/voice/speak.esc.js"
+import * as button from  "./external/components/button.esc.js"
+import * as speak from "./external/components/voice/speak.esc.js"
 
 export const esAttributes = { style: { position: 'relative' } }
 
@@ -43,18 +43,9 @@ export const esListeners = {
         }
     },
 
-    'companion.jump': {
-        speak: {
-            esBranch: [
-                {equals: 'jump small alien', value: true},
-            ]
-        },
-    },
-
     'player.jump': {
         speak: {
             esBranch: [
-                {equals: 'jump big alien', value: true},
                 {equals: 'jump', value: true},
             ]
         },

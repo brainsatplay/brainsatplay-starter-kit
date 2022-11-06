@@ -214,7 +214,7 @@ var specialKeys = {
   uri: "esURI",
   reference: "esReference",
   childPosition: "esChildPosition",
-  attribute: "__isescomponent",
+  attribute: "escomponent",
   parent: "esParent",
   component: "esComponent",
   source: "esSource",
@@ -1146,7 +1146,8 @@ var Edgelord = class {
       this.initialize();
     };
     this.#getAbsolutePath = (name2) => {
-      return !name2 || !this.rootPath || name2.includes(this.rootPath) ? name2 : [this.rootPath, name2].join(this.context.monitor.options.keySeparator);
+      const sep = this.context.monitor.options.keySeparator;
+      return !name2 || !this.rootPath || this.rootPath === name2.slice(0, this.rootPath.length) && name2[this.rootPath.length] === sep ? name2 : [this.rootPath, name2].join(sep);
     };
     this.#getPathInfo = (path) => {
       const output = {
@@ -1169,6 +1170,8 @@ var Edgelord = class {
       return output;
     };
     this.add = (from, to, value2 = true, subscription) => {
+      if (!value2)
+        return;
       const fromInfo = this.#getPathInfo(from);
       const toInfo = this.#getPathInfo(to);
       const absPath = fromInfo.absolute.value;
@@ -1286,12 +1289,10 @@ var Edgelord = class {
     };
     this.pass = (from, target, update) => {
       const id = this.context.id;
-      let parent, key, subscription;
       const isValue = target?.__value;
-      parent = target.parent;
-      key = target.key;
-      subscription = target.subscription;
-      const info2 = target.parent[key];
+      let parent = target.parent;
+      let to = target.key;
+      const info2 = target.parent[to];
       target = info2.value;
       let config = info2?.[configKey];
       let ogValue = target;
@@ -1305,7 +1306,7 @@ var Edgelord = class {
           const res = { value: value2 };
           if (willSet) {
             target = res.value;
-            parent[key] = res;
+            parent[to] = res;
           }
           return res;
         } else
@@ -1313,7 +1314,7 @@ var Edgelord = class {
       };
       const transform = (willSet) => {
         const fullPath = [id];
-        fullPath.push(...key.split(this.context.options.keySeparator));
+        fullPath.push(...to.split(this.context.options.keySeparator));
         return checkIfSetter(fullPath, willSet);
       };
       const getPathArray = (latest) => {
@@ -1334,17 +1335,17 @@ var Edgelord = class {
         const path = getPathArray(ogValue);
         checkIfSetter(path, true);
         if (isValue) {
-          parent[key] = { [ogValue]: parent[key] };
-          key = ogValue;
+          parent[to] = { [ogValue]: parent[to] };
+          to = ogValue;
         }
       } else if (target && type === "object") {
         const isConfig = isConfigObject(ogValue);
         if (isConfig) {
           if ("value" in ogValue) {
             if (isValue) {
-              target = parent[key] = ogValue.value;
+              target = parent[to] = ogValue.value;
             } else {
-              target = parent[key].value = ogValue.value;
+              target = parent[to].value = ogValue.value;
             }
           } else
             transform(true);
@@ -1352,7 +1353,7 @@ var Edgelord = class {
             if (ogValue)
               config = ogValue;
           }
-          Object.defineProperty(parent[key], configKey, { value: config });
+          Object.defineProperty(parent[to], configKey, { value: config });
         }
       }
       let isValidInput = true;
@@ -1408,23 +1409,23 @@ var Edgelord = class {
         const arrayUpdate = Array.isArray(update) ? update : [update];
         if (target === toSet) {
           const parentPath = [id];
-          parentPath.push(...key.split(this.context.options.keySeparator));
+          parentPath.push(...to.split(this.context.options.keySeparator));
           const idx = parentPath.pop();
           const info3 = this.context.monitor.get(parentPath, "info");
           info3.value[idx] = update;
         } else if (target?.default)
           target.default.call(target, ...arrayUpdate);
         else if (typeof target === "function") {
-          const noContext = parent[key][listenerObject];
+          const noContext = parent[to][listenerObject];
           if (noContext)
             target.call(config?.[specialKeys.listeners.bind]?.value ?? this.context.instance, ...arrayUpdate);
           else
             target(...arrayUpdate);
         } else {
-          let baseMessage = key ? `listener: ${from} \u2014> ${key}` : `listener from ${from}`;
+          let baseMessage = to ? `listener: ${from} \u2014> ${to}` : `listener from ${from}`;
           if (parent) {
             console.warn(`Deleting ${baseMessage}`, target);
-            delete parent[key];
+            delete parent[to];
           } else
             console.error(`Failed to add ${baseMessage}`, target);
         }
@@ -1522,22 +1523,24 @@ function merge2(base, esCompose = {}, path = [], opts = {}) {
     esCompose = [esCompose];
   let promise = resolve(esCompose.map((o) => {
     const compiled = compile(o, opts);
-    return resolve(compiled, (compiled2) => {
-      let arr = [compiled2];
-      let target = compiled2;
-      while (target[specialKeys.compose]) {
+    const checkAndPushTo = (target, acc = [], forcePush = true) => {
+      if (Array.isArray(target))
+        target.forEach((o2) => checkAndPushTo(o2, acc), true);
+      else if (target[specialKeys.compose]) {
+        acc.push(target);
         const val = target[specialKeys.compose];
         delete target[specialKeys.compose];
-        target = resolve(compile(val, opts));
-        arr.push(target);
-      }
-      return arr;
-    });
+        const newTarget = resolve(compile(val, opts));
+        checkAndPushTo(newTarget, acc);
+      } else if (forcePush)
+        acc.push(target);
+      return acc;
+    };
+    return resolve(compiled, (compiled2) => checkAndPushTo(compiled2));
   }));
   return resolve(promise, (clonedEsCompose) => {
     const flat = clonedEsCompose.flat();
     let merged = Object.assign({}, base);
-    delete merged[specialKeys.compose];
     flat.forEach((toCompose) => {
       merged = merge(toCompose, merged, path);
     });
@@ -2074,7 +2077,6 @@ function hierarchy(o, id, toMerge = {}, parent, directParent, opts = {}, callbac
   const firstMerge = merge(toMerge, o, path);
   const merged = merge2(firstMerge, o[specialKeys.compose], path, opts);
   const res = resolve(merged, (merged2) => {
-    delete merged2[specialKeys.compose];
     const instance = create_default(id, merged2, parent, opts);
     const absolutePath = path.join(opts.keySeparator ?? keySeparator);
     if (directParent)

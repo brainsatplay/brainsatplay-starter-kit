@@ -1,6 +1,6 @@
-import * as player from  "../core/components/phaser/player.esc.js"
-import create from  "../core/scripts/player/create/main.js"
-import update from "../core/scripts/player/update.js"
+import * as player from  "../external/components/phaser/player.esc.js"
+import create from  "../external/scripts/player/create/main.js"
+import update from "../external/scripts/player/update.js"
 
 
 export const esCompose = player
