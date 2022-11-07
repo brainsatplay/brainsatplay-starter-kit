@@ -1,14 +1,14 @@
 import * as game from  "../external/components/phaser/game/index.esc.js"
 import create from "../external/scripts/create.js"
 
-export const esAttributes = {
+export const __attributes = {
     style: {
         width: '100%',
         height: '100%',
     }
 }
 
-export const esCompose = game
+export const __compose = game
 
 export const preload = {
     setBaseURL: "https://raw.githubusercontent.com/brainsatplay/escode/main/apps/showcase/demos/phaser/assets",

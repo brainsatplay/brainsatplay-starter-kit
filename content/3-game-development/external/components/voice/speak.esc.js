@@ -21,11 +21,11 @@ export function stop(){
     this.active = false
 }
 
-export function esDisconnected() {
+export function __disconnected() {
     this.stop()
 }
 
-export function esConnected() {
+export function __connected() {
 
     this.recognition = new SpeechRecognition();
     const speechRecognitionList = new SpeechGrammarList();

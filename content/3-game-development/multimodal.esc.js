@@ -2,42 +2,42 @@ import * as controlled from  "./controlled.esc.js"
 import * as button from  "./external/components/button.esc.js"
 import * as speak from "./external/components/voice/speak.esc.js"
 
-export const esAttributes = { style: { position: 'relative' } }
+export const __attributes = { style: { position: 'relative' } }
 
-export const esCompose = controlled
+export const __compose = controlled
 
-export const esDOM = {
+export const __children = {
 
     buttons: {
-        esAttributes: {
+        __attributes: {
             style: {
                 position: 'absolute',
                 top: '0px',
                 left: '0px',
             },
         },
-        esDOM: {
+        __children: {
             enableVoice: {
-                esElement: 'button',
-                esAttributes: {
+                __element: 'button',
+                __attributes: {
                     innerText: 'Enable Voice Commands',
                 },
-                esCompose: button
+                __compose: button
             },
         }
     },
 
     speak: {
         // grammar,
-        esCompose: speak,
+        __compose: speak,
     },
 }
 
-export const esListeners = {
+export const __listeners = {
 
      'speak.start': {
         'buttons.enableVoice': {
-            esBranch: [
+            __branch: [
                 {equals: true, value: true}
             ]
         }
@@ -45,7 +45,7 @@ export const esListeners = {
 
     'player.jump': {
         speak: {
-            esBranch: [
+            __branch: [
                 {equals: 'jump', value: true},
             ]
         },

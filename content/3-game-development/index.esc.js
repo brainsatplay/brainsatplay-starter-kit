@@ -1,12 +1,12 @@
 import * as player from  "./components/player.esc.js"
 import * as game from  "./components/game.esc.js"
 
-export const esCompose = game
+export const __compose = game
 
-export const esDOM = {
+export const __children = {
     player,
     companion: {
-        esCompose: player,
+        __compose: player,
         position: {
             x: 100,
             y: 200

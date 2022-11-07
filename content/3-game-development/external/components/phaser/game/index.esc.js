@@ -29,20 +29,20 @@ export const container = null // Always create a container with its own scope
 
 export const pointerEvents = false
 
-export function esConnected() {
+export function __connected() {
 
     // Allow scrolling on phaser games
     this.container = document.createElement('div')
     if (!this.pointerEvents) this.container.style.pointerEvents = 'none'
     this.container.style.width = '100%'
     this.container.style.height = '100%'
-    this.esElement.appendChild(this.container)
+    this.__element.appendChild(this.container)
 
     if (window.Phaser) this.default() // run node if phaser exists
     else nodes.push(this)
 }
 
-export function esDisconnected() {
+export function __disconnected() {
     if (this.game) this.game.destroy(true, false)
 }
 
@@ -83,9 +83,9 @@ export default async function(){
             call(originalCreate, this)
             this.context = this
 
-            if (instance.esDOM) {
-                for (let key in instance.esDOM) {
-                    const component = instance.esDOM[key]
+            if (instance.__children) {
+                for (let key in instance.__children) {
+                    const component = instance.__children[key]
                     if (typeof component.ongame === 'function') component.ongame(this.context)
                 }
             }
@@ -99,10 +99,10 @@ export default async function(){
             call(originalUpdate, this) // TODO: Call all dependent objects...
 
             // run children with update functions
-            if (instance.esDOM) {
-                for (let key in instance.esDOM) {
-                    const component = instance.esDOM[key]
-                    if (typeof component.update === 'function') component.update(this, instance.esDOM) // can be internal or connected
+            if (instance.__children) {
+                for (let key in instance.__children) {
+                    const component = instance.__children[key]
+                    if (typeof component.update === 'function') component.update(this, instance.__children) // can be internal or connected
                 }
             }
         }

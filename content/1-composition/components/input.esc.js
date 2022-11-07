@@ -1,6 +1,6 @@
-export const esElement = 'input'
+export const __element = 'input'
 
-export const esAttributes = {
+export const __attributes = {
     oninput: function () { this.default() }
 }
 

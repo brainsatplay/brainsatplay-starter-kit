@@ -195,39 +195,39 @@ var defaultPath = "default";
 var esSourceKey = "__esmpileSourceBundle";
 var isPrivate = (key) => false;
 var specialKeys = {
-  start: "esConnected",
-  stop: "esDisconnected",
-  connected: "esReady",
-  hierarchy: "esDOM",
-  element: "esElement",
-  webcomponents: "esComponents",
-  attributes: "esAttributes",
+  start: "__connected",
+  stop: "__disconnected",
+  connected: "__ready",
+  hierarchy: "__children",
+  element: "__element",
+  webcomponents: "__define",
+  attributes: "__attributes",
   listeners: {
-    value: "esListeners",
-    branch: "esBranch",
-    bind: "esBind",
-    trigger: "esTrigger",
-    format: "esFormat"
+    value: "__listeners",
+    branch: "__branch",
+    bind: "__bind",
+    trigger: "__trigger",
+    format: "__format"
   },
-  trigger: "esTrigger",
-  compose: "esCompose",
-  uri: "esURI",
-  reference: "esReference",
-  childPosition: "esChildPosition",
+  trigger: "__trigger",
+  compose: "__compose",
+  uri: "__src",
+  reference: "__object",
+  childPosition: "__childposition",
   attribute: "escomponent",
-  parent: "esParent",
-  component: "esComponent",
-  source: "esSource",
-  path: "__isESComponent",
-  animate: "esAnimate",
-  options: "__esOptions",
-  states: "__esStates",
-  promise: "__esComponentPromise",
-  proxy: "__esProxy",
-  editor: "esCode",
-  flow: "__esManager",
-  original: "esOriginal",
-  resize: "esOnResize"
+  options: "__options",
+  parent: "__parent",
+  component: "__component",
+  source: "__source",
+  path: "__path",
+  animate: "__animate",
+  states: "__states",
+  promise: "__childresolved",
+  editor: "__editor",
+  flow: "__manager",
+  original: "__original",
+  resize: "__onresize",
+  proxy: "__proxy"
 };
 
 // ../common/pathHelpers.ts
@@ -266,7 +266,7 @@ var getFromPath = (baseObject, path, opts = {}) => {
       throw new Error(message);
     }
     const str = path[i];
-    if (!hasKey(str, ref) && "esDOM" in ref) {
+    if (!hasKey(str, ref) && "__children" in ref) {
       for (let i2 in fallbackKeys) {
         const key = fallbackKeys[i2];
         if (hasKey(key, ref)) {
@@ -298,8 +298,8 @@ var setFromPath = (path, value2, ref, opts = {}) => {
   path = [...path];
   const copy = [...path];
   const last = copy.pop();
-  if (ref.esDOM)
-    ref = ref.esDOM;
+  if (ref.__children)
+    ref = ref.__children;
   for (let i = 0; i < copy.length; i++) {
     const str = copy[i];
     let has = hasKey(str, ref);
@@ -314,8 +314,8 @@ var setFromPath = (path, value2, ref, opts = {}) => {
       console.error(message, path);
       throw new Error(message);
     }
-    if (ref.esDOM)
-      ref = ref.esDOM;
+    if (ref.__children)
+      ref = ref.__children;
   }
   ref[last] = value2;
 };
@@ -468,8 +468,8 @@ var Inspectable = class {
       opts.pathFormat = "relative";
     if (!opts.keySeparator)
       opts.keySeparator = keySeparator;
-    if (target.__esProxy)
-      this.proxy = target.__esProxy;
+    if (target.__proxy)
+      this.proxy = target.__proxy;
     else if (target[isProxy])
       this.proxy = target;
     else {
@@ -503,7 +503,7 @@ var Inspectable = class {
         type = typeof target === "function" ? "function" : "object";
       const handler2 = handlers_exports[`${type}s`](this);
       this.proxy = new Proxy(target, handler2);
-      Object.defineProperty(target, "__esProxy", { value: this.proxy, enumerable: false });
+      Object.defineProperty(target, "__proxy", { value: this.proxy, enumerable: false });
       Object.defineProperty(target, "__esInspectable", { value: this, enumerable: false });
       for (let key in target) {
         if (!this.parent) {
@@ -1371,7 +1371,7 @@ var Edgelord = class {
                 original: config[bindKey]
               };
             }
-          } else if (!config[bindKey].value.esParent) {
+          } else if (!config[bindKey].value.__parent) {
             target = `because ${config[bindKey].original ?? id.toString()} has become unparented.`;
           }
         } else {
@@ -1518,10 +1518,10 @@ function createErrorComponent(message) {
 }
 
 // src/create/helpers/merge.ts
-function merge2(base, esCompose = {}, path = [], opts = {}) {
-  if (!Array.isArray(esCompose))
-    esCompose = [esCompose];
-  let promise = resolve(esCompose.map((o) => {
+function merge2(base, __compose = {}, path = [], opts = {}) {
+  if (!Array.isArray(__compose))
+    __compose = [__compose];
+  let promise = resolve(__compose.map((o) => {
     const compiled = compile(o, opts);
     const checkAndPushTo = (target, acc = [], forcePush = true) => {
       if (Array.isArray(target))
@@ -1549,17 +1549,17 @@ function merge2(base, esCompose = {}, path = [], opts = {}) {
 }
 
 // src/create/element.ts
-function checkESCompose(esCompose) {
-  if (!esCompose)
+function checkESCompose(__compose) {
+  if (!__compose)
     return false;
-  const isArr = Array.isArray(esCompose);
-  return isArr ? !esCompose.reduce((a, b) => a * (checkForInternalElements(b) ? 0 : 1), true) : checkForInternalElements(esCompose);
+  const isArr = Array.isArray(__compose);
+  return isArr ? !__compose.reduce((a, b) => a * (checkForInternalElements(b) ? 0 : 1), true) : checkForInternalElements(__compose);
 }
 function checkForInternalElements(node) {
-  if (node.esElement || checkESCompose(node.esCompose))
+  if (node.__element || checkESCompose(node.__compose))
     return true;
-  else if (node.esDOM)
-    return check(node.esDOM);
+  else if (node.__children)
+    return check(node.__children);
 }
 function check(target) {
   for (let key in target) {
@@ -1703,16 +1703,16 @@ function create(id, esm2, parent, states, utilities = {}) {
           const desiredPosition = esm2[specialKeys.childPosition];
           const nextPosition = v.children.length;
           let ref = esm2[specialKeys.element];
-          const esCode = esm2[`__${specialKeys.editor}`];
-          if (esCode) {
-            ref = esCode;
+          const __editor = esm2[`__${specialKeys.editor}`];
+          if (__editor) {
+            ref = __editor;
           }
           if (desiredPosition !== void 0 && desiredPosition < nextPosition)
             v.children[desiredPosition].insertAdjacentElement("beforebegin", ref);
           else
             v.appendChild(ref);
-          if (esCode)
-            esCode.setComponent(esm2);
+          if (__editor)
+            __editor.setComponent(esm2);
         }
       } else {
         console.error("No element was created for this Component...", esm2);
@@ -1756,19 +1756,19 @@ function create(id, esm2, parent, states, utilities = {}) {
     if (cls) {
       let options = utilities.code?.options ?? {};
       options = typeof config === "boolean" ? options : { ...options, ...config };
-      const esCode = new cls(options);
-      esCode.start();
-      Object.defineProperty(esm2, `__${specialKeys.editor}`, { value: esCode });
+      const __editor = new cls(options);
+      __editor.start();
+      Object.defineProperty(esm2, `__${specialKeys.editor}`, { value: __editor });
     }
   }
-  if (esm2.esElement instanceof Element) {
+  if (esm2.__element instanceof Element) {
     esm2[specialKeys.element][specialKeys.component] = esm2;
     esm2[specialKeys.element].setAttribute(specialKeys.component, "");
   }
   if (!states) {
     esm2[specialKeys.resize] = finalStates.onresize;
     if (finalStates.parentNode)
-      esm2.esParent = finalStates.parentNode;
+      esm2.__parent = finalStates.parentNode;
   }
   return element;
 }
@@ -1805,13 +1805,13 @@ var define = (config, esm2) => {
       constructor(properties) {
         super(properties);
         resolve(src_default2(esm2), (res) => {
-          res.esElement = this;
-          this.esComponent = res;
+          res.__element = this;
+          this.__component = res;
         });
       }
       connectedCallback() {
         console.log("Custom element added to page.");
-        this.esComponent.__esReady();
+        this.__component.____ready();
       }
       disconnectedCallback() {
         console.log("Custom element removed from page.");
@@ -1873,7 +1873,7 @@ async function asyncConnect(keys, onReadyCallback) {
     if (typeof init === "function")
       await init();
     else
-      console.error(`Could not start component ${name2} because it does not have an esConnected function`);
+      console.error(`Could not start component ${name2} because it does not have a __connected function`);
   }
   if (onReadyCallback)
     await onReadyCallback();
@@ -1881,9 +1881,9 @@ async function asyncConnect(keys, onReadyCallback) {
 }
 function connect(keys, callbacks = []) {
   const privateEditorKey = `__${keys.editor}`;
-  const esCode = this[keys.parent]?.[keys.component]?.[privateEditorKey];
-  if (esCode)
-    value(privateEditorKey, esCode, this);
+  const __editor = this[keys.parent]?.[keys.component]?.[privateEditorKey];
+  if (__editor)
+    value(privateEditorKey, __editor, this);
   let source = this[esSourceKey];
   if (source) {
     if (typeof source === "function")
@@ -1921,7 +1921,7 @@ function stop_default(keys) {
       if (typeof component[keys.stop] === "function")
         component[keys.stop]();
       else
-        console.warn("Could not disconnect component because it does not have an esDisconnected function", name2, this.esDOM);
+        console.warn("Could not disconnect component because it does not have an __disconnected function", name2, this.__children);
     }
   }
   if (this[keys.element] instanceof Element) {

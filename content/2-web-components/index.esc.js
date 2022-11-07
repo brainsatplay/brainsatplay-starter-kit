@@ -1,24 +1,24 @@
 
 import * as main from '../1-composition/index.esc.js'
 
-export const esAttributes = {
+export const __attributes = {
     style: {
         display: 'flex'
     }
 }
 
-export const esComponents = {
+export const __define = {
     randomNumberDisplay: {
-        esElement: {
+        __element: {
             name: 'header-input',
             extends: 'div',
         },
-        esCompose: main
+        __compose: main
     }
 }
-export let esDOM = {}
+export let __children = {}
 
 const nDisplays = 3
 for (let i = 0; i < nDisplays; i++) {
-    esDOM[`input${i}`] = { esElement: 'header-input' }
+    __children[`input${i}`] = { __element: 'header-input' }
 }

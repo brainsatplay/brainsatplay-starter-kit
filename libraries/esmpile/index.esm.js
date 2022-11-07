@@ -528,7 +528,7 @@ var tsconfig = {
     "target": "ES2015",
     "module": "ES2020",
     "strict": false,
-    "esModuleInterop": true
+    "__moduleInterop": true
   }
 };
 var typescript = (response, type = "text") => {
@@ -573,7 +573,7 @@ var isReady = new Promise(async (resolve3, reject) => {
 var ready = isReady;
 
 // ../esc/standards.js
-var esSourceKey = "__esmpileSourceBundle";
+var __sourceKey = "__esmpileSourceBundle";
 
 // src/Bundle.js
 if (!globalThis.REMOTEESM_BUNDLES)
@@ -582,8 +582,8 @@ var global = globalThis.REMOTEESM_BUNDLES.global;
 var noEncoding = `No buffer or text to bundle for`;
 var toWait = 1e4;
 var waitedFor = (toWait / 1e3).toFixed(1);
-var esSourceString = (bundle) => `
-export const ${esSourceKey} = () => globalThis.REMOTEESM_BUNDLES["${bundle.collection}"]["${bundle.name}"];
+var __sourceString = (bundle) => `
+export const ${__sourceKey} = () => globalThis.REMOTEESM_BUNDLES["${bundle.collection}"]["${bundle.name}"];
 `;
 var re = /[^\n]*(?<![\/\/])(import)\s+([ \t]*(?:(?:\* (?:as .+))|(?:[^ \t\{\}]+[ \t]*,?)|(?:[ \t]*\{(?:[ \t]*[^ \t"'\{\}]+[ \t]*,?)+\}))[ \t]*)from[ \t]*(['"])([^'"\n]+)(?:['"])([ \t]*assert[ \t]*{[ \n\t]*type:[ \n\t]*(['"])([^'"\n]+)(?:['"])[\n\t]*})?;?/gm;
 function get9(url2, opts = this.options) {
@@ -946,7 +946,7 @@ var Bundle = class {
             break;
         }
         if (mimeType === js) {
-          const srcStr = esSourceString(this);
+          const srcStr = __sourceString(this);
           let text = bufferOrText;
           if (!isText)
             text = new TextDecoder().decode(bufferOrText);

@@ -1,11 +1,11 @@
 import * as phaser from  "./index.esc.js"
 import * as keys from  "./external/components/keyboard.esc.js"
 
-export const esCompose = phaser
+export const __compose = phaser
 
-export const esDOM = {
+export const __children = {
     keys: {
-        esCompose: keys,
+        __compose: keys,
     },
 }
 
@@ -13,14 +13,14 @@ export const esDOM = {
 const leftRight = (left, right) => {
     return {
         [`keys.${left}`]: {
-            esBranch: [
+            __branch: [
                 {equals: true, value: -150},
                 {equals: false, value: 0},
             ]
         },
 
         [`keys.${right}`]: {
-            esBranch: [
+            __branch: [
                 {equals: true, value: 150},
                 {equals: false, value: 0},
             ]
@@ -28,7 +28,7 @@ const leftRight = (left, right) => {
     }
 }
 
-export const esListeners = {
+export const __listeners = {
 
     ['player.jump']: {
         ['keys.ArrowUp']: true

@@ -3,7 +3,7 @@ import create from  "../external/scripts/player/create/main.js"
 import update from "../external/scripts/player/update.js"
 
 
-export const esCompose = player
+export const __compose = player
 
 export const position = {
     x: 200,

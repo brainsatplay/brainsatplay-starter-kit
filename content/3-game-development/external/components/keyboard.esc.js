@@ -19,7 +19,7 @@ export function updateHeld (val, command = 'add') {
     this.heldId = setTimeout(() => this.held = [...this.heldSet], this.holdTime) // State must be held for 300ms
 }
 
-export function esConnected() {
+export function __connected() {
 
     // Toggle On
     window.addEventListener('keydown', (ev) => {

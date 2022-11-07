@@ -1,13 +1,13 @@
-export const esDOM = {
+export const __children = {
     header: {
-        esElement: 'h2',
-        esAttributes:{
+        __element: 'h2',
+        __attributes:{
             innerText: 'Hello World'
         }
     }
 }
 
-export const esAttributes = {
+export const __attributes = {
     style: {
         padding: '25px'
     }

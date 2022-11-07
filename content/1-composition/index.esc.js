@@ -1,14 +1,14 @@
 import * as main from '../0-hello-world/index.esc.js'
 import * as input from './components/input.esc.js'
 
-export const esCompose = main
+export const __compose = main
 
 
-export const esDOM = {
+export const __children = {
     input
 }
 
-export const esListeners = {
+export const __listeners = {
     header: {
         input: true
     }

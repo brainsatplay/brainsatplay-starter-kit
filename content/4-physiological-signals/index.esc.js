@@ -6,19 +6,22 @@ import * as average from  "./components/average.esc.js"
 import * as threshold from  "./components/threshold.esc.js"
 
 // External Components
-import * as devices from 'https://cdn.jsdelivr.net/npm/escode-device@0.0.0'
-import * as timeseries from 'https://cdn.jsdelivr.net/npm/escode-plot-timeseries@0.0.1'
+import * as devices from 'https://cdn.jsdelivr.net/npm/escode-device@0.0.3'
+import * as timeseries from 'https://cdn.jsdelivr.net/npm/escode-plot-timeseries@0.0.4'
 
-export const esCompose = game
+console.log('devices', devices)
+export const __compose = game
 
-export const esListeners = {
+export const __attributes = { style: { position: 'relative' } }
+
+export const __listeners = {
     'player.jump': {
         threshold: true
     },
     threshold: 'average',
     average: {
         'devices.output': {
-            esFormat: (o) => { 
+            __format: (o) => { 
                 const res = o[0]
                 if (!res) return
                 else return [res] // First channel only
@@ -28,25 +31,25 @@ export const esListeners = {
     ['timeseries.plot']: 'devices.output',
 }
 
-export const esDOM = {
+export const __children = {
 
     // ---------- Blink Detector ----------
     average: {
         maxBufferSize: 20,
         buffer: [],
-        esCompose: average,
+        __compose: average,
     },
     threshold: {
         value: 100,
-        esCompose: threshold,
+        __compose: threshold,
     },
 
     // ---------- Device Connection ----------
     devices,
 
     timeseries: {
-        esCompose: timeseries,
-        esAttributes: {
+        __compose: timeseries,
+        __attributes: {
             style: {
                 position: "absolute",
                 bottom: "15px",
@@ -58,9 +61,9 @@ export const esDOM = {
         },
 
         // Style the Internal Canvases
-        esDOM: {
+        __children: {
             signalCanvas: {
-                esAttributes: {
+                __attributes: {
                     style: {
                         width: '100%',
                         height: '150px'
@@ -68,7 +71,7 @@ export const esDOM = {
                 },
             },
             overlayCanvas: {
-                esAttributes: {
+                __attributes: {
                     style: {
                         width: '100%',
                         height: '150px'

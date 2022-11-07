@@ -9,7 +9,7 @@ import * as noisySignalDemo from  "../4-physiological-signals/components/signal/
 import * as filteredSignalDemo from  "../4-physiological-signals/components/signal/versions/filtered/index.esc.js"
 
 
-export const esAttributes = {
+export const __attributes = {
     style: {
         overflow: 'scroll',
         height: '100%',
@@ -22,11 +22,11 @@ export const esAttributes = {
 
 
 const maxHeight = '400px'
-gameDemo.esAttributes.style.height = maxHeight
+gameDemo.__attributes.style.height = maxHeight
 
-// const esCode = undefined
+// const __editor = undefined
 
-const esCode = {
+const __editor = {
     style: {
         height: maxHeight,
         border: '2px solid'
@@ -34,71 +34,71 @@ const esCode = {
 }
 
 
-export const esDOM = {
+export const __children = {
 
     header: {
-        esElement: 'h1',
-        esAttributes: {
+        __element: 'h1',
+        __attributes: {
             innerText: 'Brains@Play Starter Kit'
         }
     },
 
     paragraph1: {
-        esElement: 'p',
-        esAttributes: {
+        __element: 'p',
+        __attributes: {
             innerText: 'Congratulations on starting your journey with Brains@Play. We are excited to see what you develop with us.'
         }
     },
 
     hr1: {
-        esElement: 'hr',
+        __element: 'hr',
     },
 
     h2: {
-        esElement: 'h2',
-        esAttributes: {
+        __element: 'h2',
+        __attributes: {
             innerHTML: "Part I: Getting Started"
         }
     },
 
 
     paragraph2: {
-        esElement: 'p',
-        esAttributes: {
+        __element: 'p',
+        __attributes: {
             innerHTML: 'In this tutorial, we first introduced the concept of an <b>ES Component</b> by creating a basic Hello World project with a single header tag.'
         }
     },
 
     helloworld: {
-        esCode,
-        esCompose: helloWorldDemo,
+        __editor,
+        __compose: helloWorldDemo,
     },
 
     paragraph3: {
-        esElement: 'p',
-        esAttributes: {
+        __element: 'p',
+        __attributes: {
             innerHTML: 'Then, we used the principle of <b>composition</b> to extend this by listening to the value of an input tag with the innerText of our header.'
         }
     },
 
     paragraph3_1: {
-        esElement: 'p',
-        esDOM: {
+        __element: 'p',
+        __children: {
             span1: {
-                esElement: 'span',
-                esAttributes: {
+                __element: 'span',
+                __attributes: {
                     innerHTML: 'This allowed you to update the header with '
                 },
             },
             em1: {
-                esElement: 'em',
-                esAttributes: {
+                __element: 'em',
+                __attributes: {
                     innerHTML: 'whatever you wanted'
                 },
             },
             span2: {
-                esElement: 'span',
-                esAttributes: {
+                __element: 'span',
+                __attributes: {
                     innerHTML: ' when writing in the input.'
                 },
             }
@@ -106,97 +106,97 @@ export const esDOM = {
     },
 
     composition: {
-        esCode,
-        esCompose: compositionDemo,
+        __editor,
+        __compose: compositionDemo,
     },
 
     paragraph4: {
-        esElement: 'p',
-        esAttributes: {
+        __element: 'p',
+        __attributes: {
             innerHTML: 'Next, we registered this ES Component as a <b>Web Component</b> that can be included anywhere in an existing project. How cool!'
         }
     },
 
     webcomponents: {
-        esCode,
-        esCompose: webComponentsDemo,
+        __editor,
+        __compose: webComponentsDemo,
     },
 
     hr2: {
-        esElement: 'hr',
+        __element: 'hr',
     },
 
     paragraph5: {
-        esElement: 'p',
-        esAttributes: {
+        __element: 'p',
+        __attributes: {
             innerHTML: 'Switching to a more complicated example, we used an existing ES Component to <b>create a simple game</b> using <a href="https://phaser.io/phaser3">Phaser 3</a>, while also introducing the concept of <b>multimodal control</b>.'
         }
     },
 
     game: {
-        esCode,
-        esCompose: gameDemo,
+        __editor,
+        __compose: gameDemo,
     },
 
     hr3: {
-        esElement: 'hr',
+        __element: 'hr',
     },
 
     secondsection: {
-        esDOM: {
+        __children: {
             h2: {
-                esElement: 'h2',
-                esAttributes: {
+                __element: 'h2',
+                __attributes: {
                     innerHTML: "Part II: Using Physiological Signals as Game Controls"
                 }
             },
 
             block1: {
-                esDOM: {
+                __children: {
                     p1: {
-                        esElement: 'p',
-                        esAttributes: {
+                        __element: 'p',
+                        __attributes: {
                             innerHTML: "Signals are information being carried in a medium like electricity or light that we can use to understand or communicate with each other."
                         }
                     },
                     demo1: {
-                        esCode,
-                        esCompose: signalDemo,
+                        __editor,
+                        __compose: signalDemo,
                     },
                 }
             },
 
 
             block2: {
-                esDOM: {
+                __children: {
                     p2: {
-                        esElement: 'p',
-                        esAttributes: {
+                        __element: 'p',
+                        __attributes: {
                             innerHTML: "However, signals usually have to compete with nonsensical noise due to imperfect device measurements and environmental interference."
                         }
                     },
                     demo2: {
-                        esCode,
-                        esCompose: noisySignalDemo,
+                        __editor,
+                        __compose: noisySignalDemo,
                     },
                 }
             },
 
 
             block3: {
-                esDOM: {
+                __children: {
                     p3: {
-                        esElement: 'p',
-                        esAttributes: {
+                        __element: 'p',
+                        __attributes: {
                             innerHTML: "This makes it hard to use these signals to do things like control a game!"
                         }
                     },
                     demo3: {
-                        esCode,
-                        esCompose: physiologicalSignalsDemo,
-                        esDOM: {
+                        __editor,
+                        __compose: physiologicalSignalsDemo,
+                        __children: {
                             devices: {
-                                esAttributes: {
+                                __attributes: {
                                     style: {
                                         display:'none'
                                     }
@@ -209,24 +209,25 @@ export const esDOM = {
 
 
             block4: {
-                esDOM: {
+                __children: {
                     p4: {
-                        esElement: 'p',
-                        esAttributes: {
+                        __element: 'p',
+                        __attributes: {
                             innerHTML: "We can filter some noise, but sometimes there are multiple sources of noise, in this case <b>we still see signals from our power outlet</b>, which oscillates as a 60Hz alternating current that isn't completely converted to DC current."
                         }
                     },
                     demo4: {
-                        esCode,
-                        esCompose: filteredSignalDemo,
+                        __editor,
+                        __compose: filteredSignalDemo,
 
                         // Apply Demo-Specific Filter Bank (disable notch)
-                        esDOM: {
+                        __children: {
                             devices: {
-                                esDOM: {
+                                __children: {
                                     filter: {
                                         settings: {
-                                            useBandpass: true,
+                                            useLowpass: true,
+                                            lowpassHz: 40,
                                             useDCBlock: true,
                                             useNotch50: false,
                                             useNotch60: false,
@@ -241,35 +242,35 @@ export const esDOM = {
 
 
             block5: {
-                esDOM: {
+                __children: {
                     p5: {
-                        esElement: 'p',
-                        esAttributes: {
+                        __element: 'p',
+                        __attributes: {
                             innerHTML: "To solve this we can <b>apply multiple filters</b> to block different ranges (i.e. lowpass, highpass, and bandpass filters) or specific frequencies (e.g. notch filters). "
                         }
                     },
                     demo5: {
-                        esCode,
-                        esCompose: filteredSignalDemo,
+                        __editor,
+                        __compose: filteredSignalDemo,
                     },
                 }
             },
 
 
             block6: {
-                esDOM: {
+                __children: {
                     p6: {
-                        esElement: 'p',
-                        esAttributes: {
+                        __element: 'p',
+                        __attributes: {
                             innerHTML: "With just a low pass and notch filter, we can now control the game with our eyes! Try it!"
                         }
                     },
                     demo6: {
-                        esCode,
-                        esCompose: physiologicalSignalsDemo,
-                        esDOM: {
+                        __editor,
+                        __compose: physiologicalSignalsDemo,
+                        __children: {
                             devices: {
-                                esAttributes: {
+                                __attributes: {
                                     style: {
                                         display:'none'
                                     }
@@ -283,12 +284,12 @@ export const esDOM = {
 },
 
 hr4: {
-    esElement: 'hr',
+    __element: 'hr',
 },
 
     paragraph7: {
-        esElement: 'p',
-        esAttributes: {
+        __element: 'p',
+        __attributes: {
             innerHTML: 'We hope you enjoyed this tutorial. And we hope to see you again soon!'
         }
     },
@@ -333,4 +334,4 @@ phaser.forEach(i => {
 
 
 // // const set = new Set()
-export const esListeners = listeners
+export const __listeners = listeners

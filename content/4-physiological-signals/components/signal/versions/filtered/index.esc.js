@@ -1,18 +1,18 @@
 import * as signal from "../noisy/index.esc.js";
-import * as filter from "https://cdn.jsdelivr.net/npm/escode-device-filter@0.0.1";
+import * as filter from "https://cdn.jsdelivr.net/npm/escode-device-filter@0.0.2";
 
 const filterOverride = {
-    esDOM: {
+    __children: {
         devices: filter, // Overwrite devices with filter properties
     },
 }
 
-export const esCompose = [filterOverride, signal]
+export const __compose = [filterOverride, signal]
 
 
-export const esDOM = {
+export const __children = {
     devices: {
-        esDOM: {
+        __children: {
             filter: {
                 settings: {
                     useBandpass: true,
