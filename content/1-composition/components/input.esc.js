@@ -5,6 +5,6 @@ export const __attributes = {
 }
 
 export default function(input) {
-    if (input !== undefined) this.esElement.value = input
-    return this.esElement.value
+    if (input !== undefined) this.__element.value = input
+    return this.__element.value
 }
