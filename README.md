@@ -1,21 +1,21 @@
-# brainsatplay-starter-kit
- This template repository will **get you started with [Brains@Play](https://github.com/brainsatplay): The Universal Web Development Framework**.
+# The Brains@Play Starter Kit
+ This template repository will **get you started working with [Brains@Play](https://github.com/brainsatplay) and engaging with our mission to support Universal Web Development**.
 
  > Accompanying tutorial content with source code and video links can be found in the `content` directory.
 
- Brains@Play is a framework for rapid application development.
+ ESCode is a framework for rapid application development.
 
- This framework has been designed from the bottom-up to support **visual reactive programming**. In addition to our CLI, we have on-browser visualization and editing tools to support the authoring and remixing of ES Components by anyone with a browser.
+ This framework has been designed from the bottom-up to support **visual reactive programming**. In addition to an advanced CLI, we have on-browser visualization and editing tools to support the authoring and remixing of ES Components by anyone with a browser.
 
 ## Installation
-To use the Brains@Play framework in your project, all you'll need to do is import the core [ESCompose](https://github.com/brainsatplay/escode/blob/main/libraries/escompose) library into your code, which instantiates applications from **.esc.js** files.
+To take advantage of ESCode in your project, all you'll need to do is import the core [ESCompose](https://github.com/brainsatplay/escode/blob/main/libraries/escompose) library, which instantiates applications from **.esc.js** files.
 
 ```js
 import * as escompose from './libraries/escompose/index.esm.js'
 ```
 
 ## Getting Started
-To create a functional Brains@Play application, you'll need to understand a few fundamental concepts:
+To create a functional ESCode application, you'll need to understand a few fundamental concepts:
 
 ### ES Components (.esc)
 This is covered in [hello world](./content/0-hello-world/index.esc.js) demo.
@@ -38,8 +38,3 @@ This is covered in [physiological signals](./content/4-physiological-signals/ind
 This is covered in [education](./content/5-education/index.esc.js) file, which demonstrates how to use Brains@Play applications for educational purposes.
 - Nested ESC oriented around a shared UI.
 - Native visual programming support. Just add text!
-
-### Emerging Tools
-In the final portion of our tutorial, we discuss a few tools we're working on to simplify development with Brains@Play:
-- A **Chrome Extension** for debugging
-- A **visual programming environment** (ESCode)
