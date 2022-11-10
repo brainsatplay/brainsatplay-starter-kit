@@ -2,97 +2,42 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Brains@Play Starter Kit</title>
-    <link rel=stylesheet href="./styles.css">
+    <title>ESCode: A First Look</title>
 </head>
 <body>
-    <div id="app"></div>
+    
 </body>
-<!-- <script type="module" src="./dist/index.js"></script> -->
 <script type="module">
+    
+    import * as escompose from 'https://cdn.jsdelivr.net/npm/escompose@0.1.7/dist/index.esm.js'
+    import * as escode from 'https://cdn.jsdelivr.net/npm/escode@0.1.2/dist/index.esm.js'
+    import * as esm from 'https://cdn.jsdelivr.net/npm/esmpile@0.1.4/dist/index.esm.js'
 
-    // --------------------- Import ESCompose ---------------------
-    import { escompose, escode, esm } from './libraries/index.js'
+    import * as escRef from './components/documentation.esc.js'
+    const esc = { __compose: { __object: escRef, __src: './components/documentation.esc.js' } }
 
-    // --------------------- Import a Basic ES Component ---------------------
-    import * as hello from './content/0-hello-world/index.esc.js'
-    import * as composition from './content/1-composition/index.esc.js'
-    import * as webcomponents from './content/2-web-components/index.esc.js'
-    import * as gamedevelopment from './content/3-game-development/controlled.esc.js'
-    import * as physiologicalsignals from './content/4-physiological-signals/index.esc.js'
-    import * as education from './content/5-education/index.esc.js'
-    const educationFromSourceText = { __compose: { __object: education, __src: './content/5-education/index.esc.js' } }
-
-    const esc = educationFromSourceText
-
-    const inline = false
-
-    // --------------------- Declare Properties to Apply ---------------------
-    const app = document.getElementById('app')
-    const properties = { 
-        __parent: app // Attach to DOM
+    const properties = {
+        __parent: document.body
     }
-
-    // --------------------- Specify Options ---------------------
+    
     const options = {
         utilities: {
-
-            // Wait for Child Resolution to Complete
-            // This is relevant to asynchronous source text bundling
-            await: true,
-
-            // Editor Options
             code: {
                 class: escode.Editor
             },
 
-            // Bundler Options
             bundle: {
                 function: esm.bundle.get,
                 options: {
                     relativeTo: window.location.href,
                 }
             }
-        },
-    }
-
-    // --------------------- Instantiate the Component ---------------------
-    let component = escompose.create(
-        esc, 
-        properties,
-        options
-    )
-
-    // // --------------------- Wait for Complete Resolution ---------------------
-    component = await component
-    await component.__ready
-    console.log('Got Component', component)
-
-    // -------------------- External Component Changes ---------------------
-    if (inline) {
-        if (esc === hello) {
-
-            component.__children.h2.default('Set from program!')
-            const wait = 1000
-            setTimeout(() => {
-                component.__children.h2.default(`Set ${wait}ms later!`)
-            }, wait)
-
-        }
-
-        if (esc === composition) {
-
-            component.__children.input.default('Set from program!')
-            const wait = 1000
-            setTimeout(() => {
-                component.__children.input.default(`Set ${wait}ms later!`)
-            }, wait)
-
         }
     }
 
+    escompose.create(esc, properties, options)
+    
 </script>
-
 </html>
