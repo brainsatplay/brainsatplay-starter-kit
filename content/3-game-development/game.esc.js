@@ -1,5 +1,5 @@
-import * as player from  "./components/player.esc.js"
-import * as game from  "./components/game.esc.js"
+import * as player from  "./external/components/player.esc.js"
+import * as game from  "./external/components/game.esc.js"
 
 export const __compose = game
 

@@ -15,7 +15,8 @@ export const __children = {
         __children: {
             filter: {
                 settings: {
-                    useBandpass: true,
+                    useLowpass: true,
+                    lowpassHz: 40,
                     useDCBlock: true,
                     useNotch50: true,
                     useNotch60: true,
