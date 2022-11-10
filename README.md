@@ -6,6 +6,8 @@
 
  In particular, we highlight [escode]: a framework for rapidly prototyping high-performance applications.
 
+ > **Note:** The main branch of the brainsatplay-starter-kit repository is being updated regularly to conform to the latest [escode] distribution. To view source code from our November 2022 recording of ESCode: A First Look, make sure to switch to the [firstlook](https://github.com/brainsatplay/brainsatplay-starter-kit/tree/firstlook) branch.
+
  Our software has been designed from the bottom-up to support **visual reactive programming**. In addition to an advanced CLI, we have on-browser visualization and editing tools to support the authoring and remixing of ES Components by anyone with a browser.
 
 ## Installation
