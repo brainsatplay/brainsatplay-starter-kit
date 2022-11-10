@@ -9,7 +9,6 @@ import * as threshold from  "./components/threshold.esc.js"
 import * as devices from 'https://cdn.jsdelivr.net/npm/escode-device@0.0.3'
 import * as timeseries from 'https://cdn.jsdelivr.net/npm/escode-plot-timeseries@0.0.4'
 
-console.log('devices', devices)
 export const __compose = game
 
 export const __attributes = { style: { position: 'relative' } }
