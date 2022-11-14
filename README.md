@@ -13,8 +13,20 @@
 ## Installation
 To take advantage of [escode] in your project, all you'll need to do is import the core [escompose] library, which instantiates applications from **.esc.js** files.
 
+### Basic Installation: From a CDN 
 ```js
-import * as escompose from './libraries/escompose/index.esm.js'
+import * as escompose from 'https://cdn.jsdelivr.net/npm/escompose@0.1.7/dist/index.esm.js'
+```
+
+### Advanced Installation: Using NPM
+When using a bundler, you may also install [escompose] using NPM:
+```bash
+npm install escompose
+```
+
+Usage inside a JavaScript file would look quite similar:
+```js
+import * as escompose from 'escompose'
 ```
 
 ## Getting Started
